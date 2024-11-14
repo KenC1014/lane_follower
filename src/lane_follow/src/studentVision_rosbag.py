@@ -147,12 +147,12 @@ class lanenet_detector():
         # # test image
         # transform_points = [130, 180, 120, 0, 260, 160, 0, 10]
         # gazebo
-        transform_points = {"x_tl": 540,
-                            "x_tr": 745,
-                            "y_t": 430,
-                            "x_bl": 380,
-                            "x_br": 1000,
-                            "y_b": 640,
+        transform_points = {"x_tl": 517,
+                            "x_tr": 760,
+                            "y_t": 427,
+                            "x_bl": 302,
+                            "x_br": 1050,
+                            "y_b": 660,
                             "y_t_trans": 0,
                             "y_b_shift": 0
                             }
