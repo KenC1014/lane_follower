@@ -13,7 +13,6 @@ from std_msgs.msg import Float32
 from skimage import morphology
 
 
-
 class lanenet_detector():
     def __init__(self):
 
