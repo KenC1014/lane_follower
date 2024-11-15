@@ -22,7 +22,7 @@ python3 src/lane_follow/src/studentVision_rosbag.py
 ## Play rosbags
 Make sure to create a directory under source called "bags" and put your rosbag files in there
 ```
-cd src/lane_follow/src/bags
+cd src/lane_follow/bags
 rosbag play -l <bagfile>
 ```
 

@@ -8,21 +8,30 @@ import pickle
 
 # feel free to adjust the parameters in the code if necessary
 
-def line_fit(binary_warped):
+def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right_end=None):
 	"""
 	Find and fit lane lines
 	"""
 	# Assuming you have created a warped binary image called "binary_warped"
 	# Take a histogram of the bottom half of the image
 	height, width = binary_warped.shape
+
 	histogram = np.sum(binary_warped[height//2:,:], axis=0)
 	# Create an output image to draw on and visualize the result
 	out_img = (np.dstack((binary_warped, binary_warped, binary_warped))*255).astype('uint8')
 	# Find the peak of the left and right halves of the histogram
 	# These will be the starting point for the left and right lines
+	
 	midpoint = int(width/2)
-	leftx_base = np.argmax(histogram[50:midpoint]) + 50
-	rightx_base = np.argmax(histogram[midpoint:-50]) + midpoint
+	if left_end == None:
+		left_end = midpoint
+	if right_start == None:
+		right_start = midpoint
+	if right_end == None:
+		right_end = width
+	
+	leftx_base = np.argmax(histogram[left_start:left_end]) + left_start
+	rightx_base = np.argmax(histogram[right_start:right_end]) + right_start
 
 	# Choose the number of sliding windows
 	nwindows = 9
@@ -195,7 +204,7 @@ def viz1(binary_warped, ret, save_file=None):
 	plt.gcf().clear()
 
 
-def bird_fit(binary_warped, ret, save_file=None):
+def bird_fit(binary_warped, ret, mode="front", save_file=None):
 	"""
 	Visualize the predicted lane lines with margin, on binary warped image
 	save_file is a string representing where to save the image (if None, then just display)
@@ -215,6 +224,11 @@ def bird_fit(binary_warped, ret, save_file=None):
 	out_img[nonzeroy[left_lane_inds], nonzerox[left_lane_inds]] = [255, 0, 0]
 	out_img[nonzeroy[right_lane_inds], nonzerox[right_lane_inds]] = [0, 0, 255]
 
+	if mode == "left":
+		out_img[nonzeroy[right_lane_inds], nonzerox[right_lane_inds]] = [0, 0, 0]
+	elif mode == "right":
+		out_img[nonzeroy[left_lane_inds], nonzerox[left_lane_inds]] = [0, 0, 0]
+
 	# Generate x and y values for plotting
 	ploty = np.linspace(0, binary_warped.shape[0]-1, binary_warped.shape[0])
 	left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
@@ -230,16 +244,36 @@ def bird_fit(binary_warped, ret, save_file=None):
 	right_line_window2 = np.array([np.flipud(np.transpose(np.vstack([right_fitx+margin, ploty])))])
 	right_line_pts = np.hstack((right_line_window1, right_line_window2))
 
-	# Draw the lane onto the warped blank image
-	cv2.fillPoly(window_img, np.int_([left_line_pts]), (0,255, 0))
-	cv2.fillPoly(window_img, np.int_([right_line_pts]), (0,255, 0))
-	result = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
+	if mode == "left":
+		# Draw the lane onto the warped blank image
+		cv2.fillPoly(window_img, np.int_([left_line_pts]), (255, 0, 255))
+		result = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
 
-	plt.imshow(result)
-	plt.plot(left_fitx, ploty, color='yellow')
-	plt.plot(right_fitx, ploty, color='yellow')
-	plt.xlim(0, 1280)
-	plt.ylim(720, 0)
+		plt.imshow(result)
+		plt.plot(left_fitx, ploty, color='yellow')
+		plt.xlim(0, 1280)
+		plt.ylim(720, 0)
+	elif mode == "right":
+		# Draw the lane onto the warped blank image
+		cv2.fillPoly(window_img, np.int_([right_line_pts]), (255, 0, 255))
+		result = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
+
+		plt.imshow(result)
+		plt.plot(right_fitx, ploty, color='yellow')
+		plt.xlim(0, 1280)
+		plt.ylim(720, 0)
+	else:
+		# Draw the lane onto the warped blank image
+		cv2.fillPoly(window_img, np.int_([left_line_pts]), (0,255, 0))
+		cv2.fillPoly(window_img, np.int_([right_line_pts]), (0,255, 0))
+		result = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
+
+		plt.imshow(result)
+		plt.plot(left_fitx, ploty, color='yellow')
+		plt.plot(right_fitx, ploty, color='yellow')
+		plt.xlim(0, 1280)
+		plt.ylim(720, 0)
+
 
 	# cv2.imshow('bird',result)
 	# cv2.imwrite('bird_from_cv2.png', result)
