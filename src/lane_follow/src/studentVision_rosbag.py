@@ -21,9 +21,9 @@ class lanenet_detector():
         # Front camera topic
         self.sub_image = rospy.Subscriber('/zed2/zed_node/rgb/image_rect_color', Image, self.img_callback, queue_size=1)
         # Left side camera topic
-        self.left_image = rospy.Subscriber('/camera_fl/arena_camera_node/image_raw', Image, self.img_callback, queue_size=1)
+        # self.left_image = rospy.Subscriber('/camera_fl/arena_camera_node/image_raw', Image, self.img_callback, queue_size=1)
         # Right side camera topic
-        self.right_image = rospy.Subscriber('/camera_fr/arena_camera_node/image_raw', Image, self.img_callback, queue_size=1)
+        # sself.right_image = rospy.Subscriber('/camera_fr/arena_camera_node/image_raw', Image, self.img_callback, queue_size=1)
 
         # Publishers
         self.pub_image = rospy.Publisher("lane_detection/annotate", Image, queue_size=1)
@@ -80,7 +80,7 @@ class lanenet_detector():
         img_edges = img - cv2.GaussianBlur(img, ksize=(ksize2, ksize2), sigmaX=sigma2)
         img_edges[img_edges > 255] = 255
         img_edges[img_edges < 0] = 0
-        cv2.imwrite("test_edges.jpg", img_edges.astype(np.uint8))
+        # cv2.imwrite("test_edges.jpg", img_edges.astype(np.uint8))
         min_threshold = 5
         max_threshold = 255
         binary_output = np.zeros_like(img).astype(np.uint8)
@@ -119,7 +119,7 @@ class lanenet_detector():
         #1. Apply sobel filter and color filter on input image
         #2. Combine the outputs
         ## Here you can use as many methods as you want.
-        cv2.imwrite("test_raw.jpg", img)
+        # cv2.imwrite("test_raw.jpg", img)
         ## TODO
         SobelOutput = self.gradient_thresh(img)
         ColorOutput = self.color_thresh(img)
@@ -176,9 +176,9 @@ class lanenet_detector():
         M = cv2.getPerspectiveTransform(camera_points, birdeye_points)
         Minv = cv2.getPerspectiveTransform(birdeye_points, camera_points)
 
-        cv2.imwrite("test_prebird.jpg", img * 255)
+        #cv2.imwrite("test_prebird.jpg", img * 255)
         warped_img = cv2.warpPerspective(img, M, dsize=(w, h))
-        cv2.imwrite("test_postbird.jpg", warped_img * 255)
+        #cv2.imwrite("test_postbird.jpg", warped_img * 255)
         ####
 
         return warped_img, M, Minv
@@ -190,7 +190,7 @@ class lanenet_detector():
 
         h, w, _ = img.shape
         img_birdeye_raw = cv2.warpPerspective(img, M, dsize=(w, h))
-        cv2.imwrite("test_bird.jpg", img_birdeye_raw)
+        # cv2.imwrite("test_bird.jpg", img_birdeye_raw)
 
         if not self.hist:
             # Fit lane without previous result
