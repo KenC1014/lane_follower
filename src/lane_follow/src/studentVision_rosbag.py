@@ -26,9 +26,9 @@ class lanenet_detector():
         self.right_image = rospy.Subscriber('/camera_fr/arena_camera_node/image_raw', Image, self.img_right_callback, queue_size=1)
 
         # Run test
-        # img = cv2.imread("test.jpg")
+        # img = cv2.imread("test_left.jpg")
         # binary_img = self.combinedBinaryImage(img)
-        # img_birdeye, M, Minv = self.perspective_transform(binary_img)
+        # img_birdeye, M, Minv = self.perspective_transform(binary_img, 'left')
         # cv2.imwrite("test_transform.jpg", img_birdeye*255)
 
         # Publishers
@@ -220,12 +220,12 @@ class lanenet_detector():
         
         # left camera view
         if mode == "left":
-            transform_points = {"x_tl": 1633,
-                            "x_tr": 1899,
-                            "y_t": 630,
-                            "x_bl": 1043,
-                            "x_br": 1699,
-                            "y_b": 1127,
+            transform_points = {"x_tl": 1667,
+                            "x_tr": 1872,
+                            "y_t": 574,
+                            "x_bl": 1104,
+                            "x_br": 1502,
+                            "y_b": 1072,
                             "y_t_trans": 0,
                             "y_b_shift": 0
                             }
