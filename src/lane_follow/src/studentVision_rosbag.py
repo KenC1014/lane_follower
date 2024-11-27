@@ -93,7 +93,7 @@ class lanenet_detector():
 
     def detection(self, img, mode="front"):
         binary_img = combinedBinaryImage(img)
-        img_birdeye, M, Minv = perspective_transform(binary_img, mode=self.turn)
+        img_birdeye, M, Minv = perspective_transform(binary_img, mode)
 
         left_start=0
         left_end=None
