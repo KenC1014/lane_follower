@@ -108,6 +108,16 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 	##TODO
 		left_fit = np.polyfit(lefty, leftx, deg=2)
 		right_fit = np.polyfit(righty, rightx, deg=2)
+
+		wps_left_y = np.linspace(min(lefty), max(lefty), 5).astype(int)
+
+		x_left_poly = np.poly1d(left_fit)
+		wps_left_x = x_left_poly(wps_left_y).astype(int)
+
+		wps_left = np.stack((wps_left_x, wps_left_y), axis=1)
+		
+		waypoints = wps_left
+		print("waypoints: ", waypoints)
 	####
 	except TypeError:
 		print("Unable to detect lanes")
@@ -122,6 +132,7 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 	ret['out_img'] = out_img
 	ret['left_lane_inds'] = left_lane_inds
 	ret['right_lane_inds'] = right_lane_inds
+	ret['waypoints'] = waypoints
 
 	return ret
 
@@ -287,7 +298,7 @@ def bird_fit(binary_warped, ret, mode="front", save_file=None):
 	return result
 
 
-def final_viz(undist, left_fit, right_fit, m_inv):
+def final_viz(undist, left_fit, right_fit, m_inv, waypoints):
 	"""
 	Final lane line prediction visualized and overlayed on top of original image
 	"""
@@ -308,6 +319,8 @@ def final_viz(undist, left_fit, right_fit, m_inv):
 
 	# Draw the lane onto the warped blank image
 	cv2.fillPoly(color_warp, np.int_([pts]), (0,255, 0))
+	for c in waypoints:
+		cv2.circle(color_warp, c, 20, (0, 0, 255), -1)
 
 	# Warp the blank back to original image space using inverse perspective matrix (Minv)
 	newwarp = cv2.warpPerspective(color_warp, m_inv, (undist.shape[1], undist.shape[0]))

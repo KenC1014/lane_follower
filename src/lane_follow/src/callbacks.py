@@ -14,6 +14,14 @@ def img_callback_helper(data):
 
 def gnss_imu_callback_helper(data):
     try:
+        print("\n")
         print("gnss_imu: ", data)
+    except CvBridgeError as e:
+        print(e)
+
+def gnss_nav_callback_helper(data):
+    try:
+        print("\n")
+        print("gnss_nav: ", data)
     except CvBridgeError as e:
         print(e)

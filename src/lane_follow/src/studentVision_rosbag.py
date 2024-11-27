@@ -1,6 +1,6 @@
 import rospy
-from callbacks import img_callback_helper, gnss_imu_callback_helper
-from sensor_msgs.msg import Image, Imu
+from callbacks import img_callback_helper, gnss_imu_callback_helper, gnss_nav_callback_helper
+from sensor_msgs.msg import Image, Imu, NavSatFix
 from cv_bridge import CvBridge
 from Line import Line
 from detection_utils import combinedBinaryImage, perspective_transform
@@ -15,11 +15,13 @@ class lanenet_detector():
         # Front camera topic
         self.sub_image = rospy.Subscriber('/zed2/zed_node/rgb/image_rect_color', Image, self.img_front_callback, queue_size=1)
         # Left side camera topic
-        self.left_image = rospy.Subscriber('/camera_fl/arena_camera_node/image_raw', Image, self.img_left_callback, queue_size=1)
+        # self.left_image = rospy.Subscriber('/camera_fl/arena_camera_node/image_raw', Image, self.img_left_callback, queue_size=1)
         # Right side camera topic
-        self.right_image = rospy.Subscriber('/camera_fr/arena_camera_node/image_raw', Image, self.img_right_callback, queue_size=1)
+        # self.right_image = rospy.Subscriber('/camera_fr/arena_camera_node/image_raw', Image, self.img_right_callback, queue_size=1)
         # GNSS IMU topic
-        self.gnss_imu = rospy.Subscriber('/septentrio_gnss/imu', Imu, self.gnss_imu_callback, queue_size=1)
+        # self.gnss_imu = rospy.Subscriber('/septentrio_gnss/imu', Imu, self.gnss_imu_callback, queue_size=1)
+        # GNSS Nav topic
+        # self.gnss_nav = rospy.Subscriber('/septentrio_gnss/navsatfix', NavSatFix, self.gnss_nav_callback, queue_size=1)
 
         # Publishers
         # front detection topic
@@ -82,6 +84,9 @@ class lanenet_detector():
     def gnss_imu_callback(self, data):
         gnss_imu_callback_helper(data)
 
+    def gnss_nav_callback(self, data):
+        gnss_nav_callback_helper(data)
+
 
     def detection(self, img, mode="front"):
         binary_img = combinedBinaryImage(img)
@@ -114,6 +119,7 @@ class lanenet_detector():
                     nonzeroy = ret['nonzeroy']
                     left_lane_inds = ret['left_lane_inds']
                     right_lane_inds = ret['right_lane_inds']
+                    waypoints = ret['waypoints']
 
                     left_fit = self.left_line.add_fit(left_fit)
                     right_fit = self.right_line.add_fit(right_fit)
@@ -132,6 +138,7 @@ class lanenet_detector():
                     nonzeroy = ret['nonzeroy']
                     left_lane_inds = ret['left_lane_inds']
                     right_lane_inds = ret['right_lane_inds']
+                    waypoints = ret['waypoints']
 
                     left_fit = self.left_line.add_fit(left_fit)
                     right_fit = self.right_line.add_fit(right_fit)
@@ -144,7 +151,7 @@ class lanenet_detector():
             combine_fit_img = None
             if ret is not None:
                 bird_fit_img = bird_fit(img_birdeye, ret, mode, save_file=None)
-                combine_fit_img = final_viz(img, left_fit, right_fit, Minv)
+                combine_fit_img = final_viz(img, left_fit, right_fit, Minv, waypoints)
             else:
                 print("Unable to detect lanes")
 
