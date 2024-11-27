@@ -57,7 +57,7 @@ def combinedBinaryImage(img):
         #1. Apply sobel filter and color filter on input image
         #2. Combine the outputs
         ## Here you can use as many methods as you want.
-        cv2.imwrite("test_raw.jpg", img)
+        # cv2.imwrite("test_raw.jpg", img)
         ## TODO
         SobelOutput = gradient_thresh(img)
         ColorOutput = color_thresh(img)
