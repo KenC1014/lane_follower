@@ -369,7 +369,8 @@ def final_viz(undist, left_fit, right_fit, m_inv, waypoints):
 	# Draw the lane onto the warped blank image
 	cv2.fillPoly(color_warp, np.int_([pts]), (0,255, 0))
 	for c in waypoints:
-		cv2.circle(color_warp, c, 20, (0, 0, 255), -1)
+		c_x, c_y = c
+		cv2.circle(color_warp, (c_x, c_y), 20, (0, 0, 255), -1)
 
 	# Warp the blank back to original image space using inverse perspective matrix (Minv)
 	newwarp = cv2.warpPerspective(color_warp, m_inv, (undist.shape[1], undist.shape[0]))
