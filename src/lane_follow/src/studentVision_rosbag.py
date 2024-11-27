@@ -42,6 +42,7 @@ class lanenet_detector():
         self.right_line = Line(n=5)
         self.detected = False
         self.hist = True
+        self.turn = "front"
 
     def img_front_callback(self, data):
         raw_img = img_callback_helper(data)
@@ -92,24 +93,22 @@ class lanenet_detector():
 
     def detection(self, img, mode="front"):
         binary_img = combinedBinaryImage(img)
-        img_birdeye, M, Minv = perspective_transform(binary_img, mode)
+        img_birdeye, M, Minv = perspective_transform(binary_img, mode=self.turn)
 
         left_start=0
         left_end=None
         right_start=None
         right_end=None
         waypoints = None
+        turn = self.turn
 
         if not self.hist:
             # Fit lane without previous result
             ret = line_fit(img_birdeye, left_start, left_end, right_start, right_end)
             left_fit = ret['left_fit']
             right_fit = ret['right_fit']
-            nonzerox = ret['nonzerox']
-            nonzeroy = ret['nonzeroy']
-            left_lane_inds = ret['left_lane_inds']
-            right_lane_inds = ret['right_lane_inds']
             waypoints = ret['waypoints']
+            turn = ret["turn"]
 
         else:
             # Fit lane with previous result
@@ -119,11 +118,8 @@ class lanenet_detector():
                 if ret is not None:
                     left_fit = ret['left_fit']
                     right_fit = ret['right_fit']
-                    nonzerox = ret['nonzerox']
-                    nonzeroy = ret['nonzeroy']
-                    left_lane_inds = ret['left_lane_inds']
-                    right_lane_inds = ret['right_lane_inds']
                     waypoints = ret['waypoints']
+                    turn = ret["turn"]
 
                     left_fit = self.left_line.add_fit(left_fit)
                     right_fit = self.right_line.add_fit(right_fit)
@@ -138,11 +134,8 @@ class lanenet_detector():
                 if ret is not None:
                     left_fit = ret['left_fit']
                     right_fit = ret['right_fit']
-                    nonzerox = ret['nonzerox']
-                    nonzeroy = ret['nonzeroy']
-                    left_lane_inds = ret['left_lane_inds']
-                    right_lane_inds = ret['right_lane_inds']
                     waypoints = ret['waypoints']
+                    turn = ret["turn"]
 
                     left_fit = self.left_line.add_fit(left_fit)
                     right_fit = self.right_line.add_fit(right_fit)
@@ -150,6 +143,9 @@ class lanenet_detector():
                 else:
                     self.detected = False
 
+            # Update sharp turn status
+            self.turn = turn
+            
             # Annotate original image
             bird_fit_img = None
             combine_fit_img = None

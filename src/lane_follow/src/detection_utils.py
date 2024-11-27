@@ -57,7 +57,7 @@ def combinedBinaryImage(img):
         #1. Apply sobel filter and color filter on input image
         #2. Combine the outputs
         ## Here you can use as many methods as you want.
-        # cv2.imwrite("test_raw.jpg", img)
+        cv2.imwrite("test_raw.jpg", img)
         ## TODO
         SobelOutput = gradient_thresh(img)
         ColorOutput = color_thresh(img)
@@ -95,12 +95,12 @@ def perspective_transform(img, mode="front", verbose=False):
         
         # left camera view
         if mode == "left":
-            transform_points = {"x_tl": 576,
-                            "x_tr": 2000,
-                            "y_t": 350,
-                            "x_bl": 940,
-                            "x_br": 2000,
-                            "y_b": 850,
+            transform_points = {"x_tl": 143,
+                            "x_tr": 779,
+                            "y_t": 554,
+                            "x_bl": 607,
+                            "x_br": 1139,
+                            "y_b": 693,
                             "y_t_trans": 0,
                             "y_b_shift": 0
                             }
@@ -136,7 +136,7 @@ def perspective_transform(img, mode="front", verbose=False):
         M = cv2.getPerspectiveTransform(camera_points, birdeye_points)
         Minv = cv2.getPerspectiveTransform(birdeye_points, camera_points)
 
-        #cv2.imwrite("test_prebird.jpg", img * 255)
+        # cv2.imwrite("test_prebird.jpg", img * 255)
         warped_img = cv2.warpPerspective(img, M, dsize=(w, h))
         #cv2.imwrite("test_postbird.jpg", warped_img * 255)
         ####

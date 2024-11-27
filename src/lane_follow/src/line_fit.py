@@ -11,6 +11,8 @@ import pickle
 def calculate_slope(p1, p2):
 	x1, y1 = p1
 	x2, y2 = p2
+	if x2 == x1:
+		return 100
 	return (y2 - y1) / (x2 - x1)
 
 def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right_end=None):
@@ -126,7 +128,9 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 		wps_right = np.stack((wps_right_x, wps_right_y), axis=1)
 		
 		waypoints = (wps_left + wps_right)//2
-
+		
+		# Define sharp turn
+		turn = "front"
 		# When a sharp left turn is detected
 		left_thresh = 1
 		shift = 400
@@ -137,6 +141,7 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 		if slope < left_thresh and slope > 0:
 			wps_right_x_shifted = wps_right_x - shift
 			waypoints = np.stack((wps_right_x_shifted, wps_right_y), axis=1)
+			turn = "left"
 
 		# When a sharp right turn is detected
 		right_thresh = -1
@@ -148,6 +153,7 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 		if slope > right_thresh and slope < 0 :
 			wps_left_x_shifted = wps_left_x + shift
 			waypoints = np.stack((wps_left_x_shifted, wps_left_y), axis=1)
+			turn = "right"
 		
 	####
 	except TypeError:
@@ -164,6 +170,7 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 	ret['left_lane_inds'] = left_lane_inds
 	ret['right_lane_inds'] = right_lane_inds
 	ret['waypoints'] = waypoints
+	ret['turn'] = turn
 
 	return ret
 
