@@ -95,12 +95,12 @@ def perspective_transform(img, mode="front", verbose=False):
         
         # left camera view
         if mode == "left":
-            transform_points = {"x_tl": 1667,
-                            "x_tr": 1872,
-                            "y_t": 574,
-                            "x_bl": 1104,
-                            "x_br": 1502,
-                            "y_b": 1072,
+            transform_points = {"x_tl": 576,
+                            "x_tr": 2000,
+                            "y_t": 350,
+                            "x_bl": 940,
+                            "x_br": 2000,
+                            "y_b": 850,
                             "y_t_trans": 0,
                             "y_b_shift": 0
                             }

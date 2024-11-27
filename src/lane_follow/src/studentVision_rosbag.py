@@ -27,6 +27,7 @@ class lanenet_detector():
         # front detection topic
         self.pub_image = rospy.Publisher("lane_detection/annotate", Image, queue_size=1)
         self.pub_bird = rospy.Publisher("lane_detection/birdseye", Image, queue_size=1)
+        # self.waypoints = rospy.Publisher("lane_detection/waypoints", Image, queue_size=1)
 
         # left detection topic
         self.pub_image_left = rospy.Publisher("left_lane_detection/annotate", Image, queue_size=1)
@@ -44,7 +45,7 @@ class lanenet_detector():
 
     def img_front_callback(self, data):
         raw_img = img_callback_helper(data)
-        mask_image, bird_image = self.detection(raw_img, mode="front")
+        mask_image, bird_image, waypoints = self.detection(raw_img, mode="front")
         
         if mask_image is not None and bird_image is not None:
             # Convert an OpenCV image into a ROS image message
@@ -54,10 +55,11 @@ class lanenet_detector():
             # Publish image message in ROS
             self.pub_image.publish(out_img_msg)
             self.pub_bird.publish(out_bird_msg)
+            # self.waypoints.publish(waypoints)
 
     def img_left_callback(self, data):
         raw_img = img_callback_helper(data)
-        mask_image, bird_image = self.detection(raw_img, mode="left")
+        mask_image, bird_image, _ = self.detection(raw_img, mode="left")
 
         if mask_image is not None and bird_image is not None:
             # Convert an OpenCV image into a ROS image message
@@ -70,7 +72,7 @@ class lanenet_detector():
 
     def img_right_callback(self, data):
         raw_img = img_callback_helper(data)
-        mask_image, bird_image = self.detection(raw_img, mode="right")
+        mask_image, bird_image, _ = self.detection(raw_img, mode="right")
 
         if mask_image is not None and bird_image is not None:
             # Convert an OpenCV image into a ROS image message
@@ -96,6 +98,7 @@ class lanenet_detector():
         left_end=None
         right_start=None
         right_end=None
+        waypoints = None
 
         if not self.hist:
             # Fit lane without previous result
@@ -106,6 +109,7 @@ class lanenet_detector():
             nonzeroy = ret['nonzeroy']
             left_lane_inds = ret['left_lane_inds']
             right_lane_inds = ret['right_lane_inds']
+            waypoints = ret['waypoints']
 
         else:
             # Fit lane with previous result
@@ -155,7 +159,7 @@ class lanenet_detector():
             else:
                 print("Unable to detect lanes")
 
-            return combine_fit_img, bird_fit_img
+            return combine_fit_img, bird_fit_img, waypoints
 
     
 

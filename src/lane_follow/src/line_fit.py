@@ -8,6 +8,11 @@ import pickle
 
 # feel free to adjust the parameters in the code if necessary
 
+def calculate_slope(p1, p2):
+	x1, y1 = p1
+	x2, y2 = p2
+	return (y2 - y1) / (x2 - x1)
+
 def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right_end=None):
 	"""
 	Find and fit lane lines
@@ -117,11 +122,33 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 		x_right_poly = np.poly1d(right_fit)
 		wps_right_x = x_right_poly(wps_right_y).astype(int)
 
-
 		wps_left = np.stack((wps_left_x, wps_left_y), axis=1)
 		wps_right = np.stack((wps_right_x, wps_right_y), axis=1)
 		
 		waypoints = (wps_left + wps_right)//2
+
+		# When a sharp left turn is detected
+		left_thresh = 1
+		shift = 400
+		p1 = wps_right[0]
+		p2 = wps_right[len(wps_right) - 1]
+		slope = calculate_slope(p1, p2)
+		
+		if slope < left_thresh and slope > 0:
+			wps_right_x_shifted = wps_right_x - shift
+			waypoints = np.stack((wps_right_x_shifted, wps_right_y), axis=1)
+
+		# When a sharp right turn is detected
+		right_thresh = -1
+		shift = 400
+		p1 = wps_left[0]
+		p2 = wps_left[len(wps_left) - 1]
+		slope = calculate_slope(p1, p2)
+		
+		if slope > right_thresh and slope < 0 :
+			wps_left_x_shifted = wps_left_x + shift
+			waypoints = np.stack((wps_left_x_shifted, wps_left_y), axis=1)
+		
 	####
 	except TypeError:
 		print("Unable to detect lanes")
@@ -239,10 +266,10 @@ def bird_fit(binary_warped, ret, mode="front", save_file=None):
 	out_img[nonzeroy[left_lane_inds], nonzerox[left_lane_inds]] = [255, 0, 0]
 	out_img[nonzeroy[right_lane_inds], nonzerox[right_lane_inds]] = [0, 0, 255]
 
-	if mode == "left":
-		out_img[nonzeroy[right_lane_inds], nonzerox[right_lane_inds]] = [0, 0, 0]
-	elif mode == "right":
-		out_img[nonzeroy[left_lane_inds], nonzerox[left_lane_inds]] = [0, 0, 0]
+	# if mode == "left":
+	# 	out_img[nonzeroy[right_lane_inds], nonzerox[right_lane_inds]] = [0, 0, 0]
+	# elif mode == "right":
+	# 	out_img[nonzeroy[left_lane_inds], nonzerox[left_lane_inds]] = [0, 0, 0]
 
 	# Generate x and y values for plotting
 	ploty = np.linspace(0, binary_warped.shape[0]-1, binary_warped.shape[0])
@@ -259,35 +286,46 @@ def bird_fit(binary_warped, ret, mode="front", save_file=None):
 	right_line_window2 = np.array([np.flipud(np.transpose(np.vstack([right_fitx+margin, ploty])))])
 	right_line_pts = np.hstack((right_line_window1, right_line_window2))
 
-	if mode == "left":
-		# Draw the lane onto the warped blank image
-		cv2.fillPoly(window_img, np.int_([left_line_pts]), (255, 0, 255))
-		result = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
+	# if mode == "left":
+	# 	# Draw the lane onto the warped blank image
+	# 	cv2.fillPoly(window_img, np.int_([left_line_pts]), (255, 0, 255))
+	# 	result = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
 
-		plt.imshow(result)
-		plt.plot(left_fitx, ploty, color='yellow')
-		plt.xlim(0, 1280)
-		plt.ylim(720, 0)
-	elif mode == "right":
-		# Draw the lane onto the warped blank image
-		cv2.fillPoly(window_img, np.int_([right_line_pts]), (255, 0, 255))
-		result = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
+	# 	plt.imshow(result)
+	# 	plt.plot(left_fitx, ploty, color='yellow')
+	# 	plt.xlim(0, 1280)
+	# 	plt.ylim(720, 0)
+	# elif mode == "right":
+	# 	# Draw the lane onto the warped blank image
+	# 	cv2.fillPoly(window_img, np.int_([right_line_pts]), (255, 0, 255))
+	# 	result = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
 
-		plt.imshow(result)
-		plt.plot(right_fitx, ploty, color='yellow')
-		plt.xlim(0, 1280)
-		plt.ylim(720, 0)
-	else:
-		# Draw the lane onto the warped blank image
-		cv2.fillPoly(window_img, np.int_([left_line_pts]), (0,255, 0))
-		cv2.fillPoly(window_img, np.int_([right_line_pts]), (0,255, 0))
-		result = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
+	# 	plt.imshow(result)
+	# 	plt.plot(right_fitx, ploty, color='yellow')
+	# 	plt.xlim(0, 1280)
+	# 	plt.ylim(720, 0)
+	# else:
+	# 	# Draw the lane onto the warped blank image
+	# 	cv2.fillPoly(window_img, np.int_([left_line_pts]), (0,255, 0))
+	# 	cv2.fillPoly(window_img, np.int_([right_line_pts]), (0,255, 0))
+	# 	result = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
 
-		plt.imshow(result)
-		plt.plot(left_fitx, ploty, color='yellow')
-		plt.plot(right_fitx, ploty, color='yellow')
-		plt.xlim(0, 1280)
-		plt.ylim(720, 0)
+	# 	plt.imshow(result)
+	# 	plt.plot(left_fitx, ploty, color='yellow')
+	# 	plt.plot(right_fitx, ploty, color='yellow')
+	# 	plt.xlim(0, 1280)
+	# 	plt.ylim(720, 0)
+
+	# Draw the lane onto the warped blank image
+	cv2.fillPoly(window_img, np.int_([left_line_pts]), (0,255, 0))
+	cv2.fillPoly(window_img, np.int_([right_line_pts]), (0,255, 0))
+	result = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
+
+	plt.imshow(result)
+	plt.plot(left_fitx, ploty, color='yellow')
+	plt.plot(right_fitx, ploty, color='yellow')
+	plt.xlim(0, 1280)
+	plt.ylim(720, 0)
 
 
 	# cv2.imshow('bird',result)
