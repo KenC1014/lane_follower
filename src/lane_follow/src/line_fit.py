@@ -110,14 +110,18 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 		right_fit = np.polyfit(righty, rightx, deg=2)
 
 		wps_left_y = np.linspace(min(lefty), max(lefty), 5).astype(int)
+		wps_right_y = np.linspace(min(righty), max(righty), 5).astype(int)
 
 		x_left_poly = np.poly1d(left_fit)
 		wps_left_x = x_left_poly(wps_left_y).astype(int)
+		x_right_poly = np.poly1d(right_fit)
+		wps_right_x = x_right_poly(wps_right_y).astype(int)
+
 
 		wps_left = np.stack((wps_left_x, wps_left_y), axis=1)
+		wps_right = np.stack((wps_right_x, wps_right_y), axis=1)
 		
-		waypoints = wps_left
-		print("waypoints: ", waypoints)
+		waypoints = (wps_left + wps_right)//2
 	####
 	except TypeError:
 		print("Unable to detect lanes")
