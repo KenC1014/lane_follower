@@ -1,6 +1,7 @@
 import rospy
 from callbacks import img_callback_helper, gnss_imu_callback_helper, gnss_nav_callback_helper
 from sensor_msgs.msg import Image, Imu, NavSatFix
+from std_msgs.msg import Int16MultiArray
 from cv_bridge import CvBridge
 from Line import Line
 from detection_utils import combinedBinaryImage, perspective_transform
@@ -27,7 +28,7 @@ class lanenet_detector():
         # front detection topic
         self.pub_image = rospy.Publisher("lane_detection/annotate", Image, queue_size=1)
         self.pub_bird = rospy.Publisher("lane_detection/birdseye", Image, queue_size=1)
-        # self.waypoints = rospy.Publisher("lane_detection/waypoints", Image, queue_size=1)
+        self.waypoints = rospy.Publisher("lane_detection/waypoints", Int16MultiArray, queue_size=1)
 
         # left detection topic
         self.pub_image_left = rospy.Publisher("left_lane_detection/annotate", Image, queue_size=1)
@@ -56,7 +57,9 @@ class lanenet_detector():
             # Publish image message in ROS
             self.pub_image.publish(out_img_msg)
             self.pub_bird.publish(out_bird_msg)
-            # self.waypoints.publish(waypoints)
+            waypoint_topic = Int16MultiArray()
+            waypoint_topic.data = waypoints
+            self.waypoints.publish(waypoint_topic)
 
     def img_left_callback(self, data):
         raw_img = img_callback_helper(data)
@@ -99,9 +102,9 @@ class lanenet_detector():
         left_end=None
         right_start=None
         right_end=None
-        waypoints = None
-        wps_left = None
-        right_wps = None
+        waypoints = []
+        wps_left = []
+        wps_right  = []
         turn = self.turn
 
         if not self.hist:

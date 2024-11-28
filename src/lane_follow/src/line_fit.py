@@ -127,9 +127,11 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 
 		# Interpolate if abnomality occurs
 		shift = 400
-		if wps_left_x[0] >= wps_right_x[0]:
+		min_dis = 50
+		print("dis:", wps_right_x[0] - wps_left_x[0])
+		# left lane too close or overthrow right lane
+		if wps_right_x[0] - wps_left_x[0] < min_dis:
 			wps_left_x = wps_right_x - shift
-			wps_right_x = wps_left_x + shift
 
 		# Stack x, y to get points
 		wps_left = np.stack((wps_left_x, wps_left_y), axis=1)
@@ -368,7 +370,7 @@ def final_viz(undist, m_inv, waypoints, wps_left, wps_right):
 		pc_x, pc_y = prev_c
 		c_x, c_y = c
 		cv2.circle(color_warp, (c_x, c_y), 20, (0, 0, 255), -1)
-		cv2.line(color_warp, (pc_x, pc_y), (c_x, c_y), (255, 0, 0), 5)
+		cv2.line(color_warp, (pc_x, pc_y), (c_x, c_y), (255, 0, 0), 7)
 		prev_c = c
 
 	for c in wps_left:
