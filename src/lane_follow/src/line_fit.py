@@ -118,8 +118,10 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 
 		start_pos = 30
 		num_wps = 5
+
 		if turn != "front":
-			num_wps = 20
+			num_wps = 15
+
 		wps_left_y = np.linspace(start_pos, max(lefty), num_wps).astype(int)
 		wps_right_y = np.linspace(start_pos, max(righty), num_wps).astype(int)
 
@@ -130,8 +132,8 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 		wps_right_x = x_right_poly(wps_right_y).astype(int)
 
 		# Interpolate if abnomality occurs
-		x_shift = 220
-		y_shift = 380
+		x_shift = 300
+		y_shift = 400
 		min_dis = 50
 
 		if abs(wps_right_x[0] - wps_left_x[0]) < min_dis:
@@ -141,7 +143,7 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 		# Define sharp turn
 		turn = "front"
 		# When a sharp left turn is detected
-		left_thresh = 0.9
+		left_thresh = 0.6
 		p1 = (wps_right_x[0], wps_right_y[0])
 		p2 = (wps_right_x[len(wps_right_x) - 1], wps_right_y[len(wps_right_y) - 1])
 		slope = calculate_slope(p1, p2)
@@ -153,7 +155,7 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 			turn = "left"
 
 		# When a sharp right turn is detected
-		right_thresh = -0.9
+		right_thresh = -0.6
 		p1 = (wps_left_x[0], wps_left_y[0])
 		p2 = (wps_left_x[len(wps_left_x) - 1], wps_left_y[len(wps_left_y) - 1])
 		slope = calculate_slope(p1, p2)
@@ -176,15 +178,20 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 				if w_x >= 0:
 					indice = i
 					break
+			
+			num_effect_wps = num_wps
+			num_enhanced_wps = 9
+			if turn != "front" and len(waypoints) >= num_enhanced_wps:
+				num_effect_wps = num_enhanced_wps
 
-			wps_left = wps_left[indice: indice + 5]
-			wps_right = wps_right[indice: indice + 5]
-			waypoints = waypoints[indice: indice + 5]
+			wps_left = wps_left[indice: indice + num_effect_wps]
+			wps_right = wps_right[indice: indice + num_effect_wps]
+			waypoints = waypoints[indice: indice + num_effect_wps]
 
-		if len(waypoints) < 5:
-			print("warning, waypoints less than 5")
-			print(f"turn: {turn}")
-			print(waypoints)
+		# if len(waypoints) < 5:
+		# 	print("warning, waypoints less than 5")
+		# 	print(f"turn: {turn}")
+		# 	print(waypoints)
 		
 	####
 	except TypeError:
