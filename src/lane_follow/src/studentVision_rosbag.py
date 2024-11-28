@@ -109,7 +109,7 @@ class lanenet_detector():
 
         if not self.hist:
             # Fit lane without previous result
-            ret = line_fit(img_birdeye, left_start, left_end, right_start, right_end)
+            ret = line_fit(img_birdeye, left_start, left_end, right_start, right_end, self.turn)
             left_fit = ret['left_fit']
             right_fit = ret['right_fit']
             waypoints = ret['waypoints']
@@ -120,7 +120,7 @@ class lanenet_detector():
         else:
             # Fit lane with previous result
             if not self.detected:
-                ret = line_fit(img_birdeye, left_start, left_end, right_start, right_end)
+                ret = line_fit(img_birdeye, left_start, left_end, right_start, right_end, self.turn)
 
                 if ret is not None:
                     left_fit = ret['left_fit']
