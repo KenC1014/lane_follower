@@ -128,40 +128,37 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 		# Interpolate if abnomality occurs
 		shift = 400
 		min_dis = 50
-		print("dis:", wps_right_x[0] - wps_left_x[0])
-		# left lane too close or overthrow right lane
-		if wps_right_x[0] - wps_left_x[0] < min_dis:
+
+		# Define sharp turn
+		turn = "front"
+		# When a sharp left turn is detected
+		left_thresh = 0.9
+		p1 = (wps_right_x[0], wps_right_y[0])
+		p2 = (wps_right_x[len(wps_right_x) - 1], wps_right_y[len(wps_right_y) - 1])
+		slope = calculate_slope(p1, p2)
+		
+		if slope < left_thresh and slope > 0:
+			# left lane too close or overthrow right lane
 			wps_left_x = wps_right_x - shift
+			wps_left_y = wps_right_y + shift
+			turn = "left"
+
+		# When a sharp right turn is detected
+		right_thresh = -0.9
+		p1 = (wps_left_x[0], wps_left_y[0])
+		p2 = (wps_left_x[len(wps_left_x) - 1], wps_left_y[len(wps_left_y) - 1])
+		slope = calculate_slope(p1, p2)
+		
+		if slope > right_thresh and slope < 0 :
+			wps_right_x = wps_left_x + shift
+			wps_right_y = wps_left_y - shift
+			turn = "right"
 
 		# Stack x, y to get points
 		wps_left = np.stack((wps_left_x, wps_left_y), axis=1)
 		wps_right = np.stack((wps_right_x, wps_right_y), axis=1)
 		
 		waypoints = (wps_left + wps_right)//2
-		
-		# Define sharp turn
-		turn = "front"
-		# When a sharp left turn is detected
-		left_thresh = 1
-		p1 = wps_right[0]
-		p2 = wps_right[len(wps_right) - 1]
-		slope = calculate_slope(p1, p2)
-		
-		if slope < left_thresh and slope > 0:
-			wps_right_x_shifted = wps_right_x - shift
-			waypoints = np.stack((wps_right_x_shifted, wps_right_y), axis=1)
-			turn = "left"
-
-		# When a sharp right turn is detected
-		right_thresh = -1
-		p1 = wps_left[0]
-		p2 = wps_left[len(wps_left) - 1]
-		slope = calculate_slope(p1, p2)
-		
-		if slope > right_thresh and slope < 0 :
-			wps_left_x_shifted = wps_left_x + shift
-			waypoints = np.stack((wps_left_x_shifted, wps_left_y), axis=1)
-			turn = "right"
 		
 	####
 	except TypeError:
@@ -357,7 +354,7 @@ def bird_fit(binary_warped, ret, mode="front", save_file=None):
 	return result
 
 
-def final_viz(undist, m_inv, waypoints, wps_left, wps_right):
+def final_viz(undist, m_inv, waypoints, wps_left, wps_right, turn):
 	"""
 	Final lane line prediction visualized and overlayed on top of original image
 	"""
@@ -383,7 +380,6 @@ def final_viz(undist, m_inv, waypoints, wps_left, wps_right):
 		c_x, c_y = c
 		cv2.circle(color_warp, (c_x, c_y), 20, (0, 255, 0), -1)
 
-
 	# Warp the blank back to original image space using inverse perspective matrix (Minv)
 	newwarp = cv2.warpPerspective(color_warp, m_inv, (undist.shape[1], undist.shape[0]))
 	# Combine the result with the original image
@@ -391,5 +387,15 @@ def final_viz(undist, m_inv, waypoints, wps_left, wps_right):
 	undist = np.array(undist, dtype=np.uint8)
 	newwarp = np.array(newwarp, dtype=np.uint8)
 	result = cv2.addWeighted(undist, 1, newwarp, 0.3, 0)
+
+	# Caption
+	font = cv2.FONT_HERSHEY_SIMPLEX
+	if turn == "left":
+		cv2.putText(result,'Sharp Left Turn',(900,70), font, 1, (0,255,255),2,cv2.LINE_AA)
+	elif turn == "right":
+		cv2.putText(result,'Sharp Right Turn',(900,70), font, 1, (0,255,255),2,cv2.LINE_AA)
+	else:
+		cv2.putText(result,'Normal',(1100,70), font, 1, (0,255,255),2,cv2.LINE_AA)
+
 
 	return result

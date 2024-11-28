@@ -162,7 +162,7 @@ class lanenet_detector():
             combine_fit_img = None
             if ret is not None:
                 bird_fit_img = bird_fit(img_birdeye, ret, mode, save_file=None)
-                combine_fit_img = final_viz(img, Minv, waypoints, wps_left, wps_right)
+                combine_fit_img = final_viz(img, Minv, waypoints, wps_left, wps_right, self.turn)
             else:
                 print("Unable to detect lanes")
 
