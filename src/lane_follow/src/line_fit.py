@@ -176,8 +176,8 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 	ret['left_lane_inds'] = left_lane_inds
 	ret['right_lane_inds'] = right_lane_inds
 	ret['waypoints'] = waypoints
-	ret['left_wps'] = wps_left
-	ret['right_wps'] = wps_right
+	ret['wps_left'] = wps_left
+	ret['wps_right'] = wps_right
 	ret['turn'] = turn
 
 	return ret

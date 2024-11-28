@@ -100,7 +100,7 @@ class lanenet_detector():
         right_start=None
         right_end=None
         waypoints = None
-        left_wps = None
+        wps_left = None
         right_wps = None
         turn = self.turn
 
@@ -110,8 +110,8 @@ class lanenet_detector():
             left_fit = ret['left_fit']
             right_fit = ret['right_fit']
             waypoints = ret['waypoints']
-            wps_left = ret['left_wps']
-            wps_right = ret['right_wps']
+            wps_left = ret['wps_left']
+            wps_right = ret['wps_right']
             turn = ret["turn"]
 
         else:
@@ -123,8 +123,8 @@ class lanenet_detector():
                     left_fit = ret['left_fit']
                     right_fit = ret['right_fit']
                     waypoints = ret['waypoints']
-                    wps_left = ret['left_wps']
-                    wps_right = ret['right_wps']
+                    wps_left = ret['wps_left']
+                    wps_right = ret['wps_right']
                     turn = ret["turn"]
 
                     left_fit = self.left_line.add_fit(left_fit)
@@ -141,8 +141,8 @@ class lanenet_detector():
                     left_fit = ret['left_fit']
                     right_fit = ret['right_fit']
                     waypoints = ret['waypoints']
-                    wps_left = ret['left_wps']
-                    wps_right = ret['right_wps']
+                    wps_left = ret['wps_left']
+                    wps_right = ret['wps_right']
                     turn = ret["turn"]
 
                     left_fit = self.left_line.add_fit(left_fit)
