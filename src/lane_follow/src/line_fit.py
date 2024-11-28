@@ -116,11 +116,12 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 		left_fit = np.polyfit(lefty, leftx, deg=2)
 		right_fit = np.polyfit(righty, rightx, deg=2)
 
+		start_pos = 30
 		num_wps = 5
 		if turn != "front":
 			num_wps = 20
-		wps_left_y = np.linspace(0, max(lefty), num_wps).astype(int)
-		wps_right_y = np.linspace(0, max(righty), num_wps).astype(int)
+		wps_left_y = np.linspace(start_pos, max(lefty), num_wps).astype(int)
+		wps_right_y = np.linspace(start_pos, max(righty), num_wps).astype(int)
 
 		x_left_poly = np.poly1d(left_fit)
 		wps_left_x = x_left_poly(wps_left_y).astype(int)
@@ -179,6 +180,11 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 			wps_left = wps_left[indice: indice + 5]
 			wps_right = wps_right[indice: indice + 5]
 			waypoints = waypoints[indice: indice + 5]
+
+		if len(waypoints) < 5:
+			print("warning, waypoints less than 5")
+			print(f"turn: {turn}")
+			print(waypoints)
 		
 	####
 	except TypeError:
@@ -387,7 +393,7 @@ def final_viz(undist, m_inv, waypoints, wps_left, wps_right, turn):
 		pc_x, pc_y = prev_c
 		c_x, c_y = c
 		cv2.circle(color_warp, (c_x, c_y), 20, (0, 0, 255), -1)
-		cv2.line(color_warp, (pc_x, pc_y), (c_x, c_y), (255, 0, 0), 7)
+		cv2.line(color_warp, (pc_x, pc_y), (c_x, c_y), (255, 0, 0), 9)
 		prev_c = c
 
 	for c in wps_left:
