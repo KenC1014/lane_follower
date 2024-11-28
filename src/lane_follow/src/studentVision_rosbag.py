@@ -100,6 +100,8 @@ class lanenet_detector():
         right_start=None
         right_end=None
         waypoints = None
+        left_wps = None
+        right_wps = None
         turn = self.turn
 
         if not self.hist:
@@ -108,6 +110,8 @@ class lanenet_detector():
             left_fit = ret['left_fit']
             right_fit = ret['right_fit']
             waypoints = ret['waypoints']
+            wps_left = ret['left_wps']
+            wps_right = ret['right_wps']
             turn = ret["turn"]
 
         else:
@@ -119,6 +123,8 @@ class lanenet_detector():
                     left_fit = ret['left_fit']
                     right_fit = ret['right_fit']
                     waypoints = ret['waypoints']
+                    wps_left = ret['left_wps']
+                    wps_right = ret['right_wps']
                     turn = ret["turn"]
 
                     left_fit = self.left_line.add_fit(left_fit)
@@ -135,6 +141,8 @@ class lanenet_detector():
                     left_fit = ret['left_fit']
                     right_fit = ret['right_fit']
                     waypoints = ret['waypoints']
+                    wps_left = ret['left_wps']
+                    wps_right = ret['right_wps']
                     turn = ret["turn"]
 
                     left_fit = self.left_line.add_fit(left_fit)
@@ -151,7 +159,7 @@ class lanenet_detector():
             combine_fit_img = None
             if ret is not None:
                 bird_fit_img = bird_fit(img_birdeye, ret, mode, save_file=None)
-                combine_fit_img = final_viz(img, left_fit, right_fit, Minv, waypoints)
+                combine_fit_img = final_viz(img, Minv, waypoints, wps_left, wps_right)
             else:
                 print("Unable to detect lanes")
 

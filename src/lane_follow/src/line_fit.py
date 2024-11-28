@@ -116,14 +116,22 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 		left_fit = np.polyfit(lefty, leftx, deg=2)
 		right_fit = np.polyfit(righty, rightx, deg=2)
 
-		wps_left_y = np.linspace(min(lefty), max(lefty), 5).astype(int)
-		wps_right_y = np.linspace(min(righty), max(righty), 5).astype(int)
+		wps_left_y = np.linspace(0, max(lefty), 5).astype(int)
+		wps_right_y = np.linspace(0, max(righty), 5).astype(int)
 
 		x_left_poly = np.poly1d(left_fit)
 		wps_left_x = x_left_poly(wps_left_y).astype(int)
+
 		x_right_poly = np.poly1d(right_fit)
 		wps_right_x = x_right_poly(wps_right_y).astype(int)
 
+		# Interpolate if abnomality occurs
+		shift = 400
+		if wps_left_x[0] >= wps_right_x[0]:
+			wps_left_x = wps_right_x - shift
+			wps_right_x = wps_left_x + shift
+
+		# Stack x, y to get points
 		wps_left = np.stack((wps_left_x, wps_left_y), axis=1)
 		wps_right = np.stack((wps_right_x, wps_right_y), axis=1)
 		
@@ -133,7 +141,6 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 		turn = "front"
 		# When a sharp left turn is detected
 		left_thresh = 1
-		shift = 400
 		p1 = wps_right[0]
 		p2 = wps_right[len(wps_right) - 1]
 		slope = calculate_slope(p1, p2)
@@ -145,7 +152,6 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 
 		# When a sharp right turn is detected
 		right_thresh = -1
-		shift = 400
 		p1 = wps_left[0]
 		p2 = wps_left[len(wps_left) - 1]
 		slope = calculate_slope(p1, p2)
@@ -170,6 +176,8 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 	ret['left_lane_inds'] = left_lane_inds
 	ret['right_lane_inds'] = right_lane_inds
 	ret['waypoints'] = waypoints
+	ret['left_wps'] = wps_left
+	ret['right_wps'] = wps_right
 	ret['turn'] = turn
 
 	return ret
@@ -347,24 +355,12 @@ def bird_fit(binary_warped, ret, mode="front", save_file=None):
 	return result
 
 
-def final_viz(undist, left_fit, right_fit, m_inv, waypoints):
+def final_viz(undist, m_inv, waypoints, wps_left, wps_right):
 	"""
 	Final lane line prediction visualized and overlayed on top of original image
 	"""
-	# Generate x and y values for plotting
-	ploty = np.linspace(0, undist.shape[0]-1, undist.shape[0])
-	left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
-	right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
-
 	# Create an image to draw the lines on
-	#warp_zero = np.zeros_like(warped).astype(np.uint8)
-	#color_warp = np.dstack((warp_zero, warp_zero, warp_zero))
 	color_warp = np.zeros((720, 1280, 3), dtype='uint8')  # NOTE: Hard-coded image dimensions
-
-	# Recast the x and y points into usable format for cv2.fillPoly()
-	pts_left = np.array([np.transpose(np.vstack([left_fitx, ploty]))])
-	pts_right = np.array([np.flipud(np.transpose(np.vstack([right_fitx, ploty])))])
-	pts = np.hstack((pts_left, pts_right))
 
 	# Draw the lane onto the warped blank image
 	prev_c = waypoints[0]
@@ -374,6 +370,17 @@ def final_viz(undist, left_fit, right_fit, m_inv, waypoints):
 		cv2.circle(color_warp, (c_x, c_y), 20, (0, 0, 255), -1)
 		cv2.line(color_warp, (pc_x, pc_y), (c_x, c_y), (255, 0, 0), 5)
 		prev_c = c
+
+	for c in wps_left:
+		pc_x, pc_y = prev_c
+		c_x, c_y = c
+		cv2.circle(color_warp, (c_x, c_y), 20, (0, 255, 255), -1)
+
+	for c in wps_right:
+		pc_x, pc_y = prev_c
+		c_x, c_y = c
+		cv2.circle(color_warp, (c_x, c_y), 20, (0, 255, 0), -1)
+
 
 	# Warp the blank back to original image space using inverse perspective matrix (Minv)
 	newwarp = cv2.warpPerspective(color_warp, m_inv, (undist.shape[1], undist.shape[0]))
