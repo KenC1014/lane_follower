@@ -1,3 +1,4 @@
+import numpy as np
 from cv_bridge import CvBridge, CvBridgeError
 
 bridge = CvBridge()
@@ -11,6 +12,10 @@ def img_callback_helper(data):
     raw_img = cv_image.copy()
     return raw_img
 
+def waypoints_callback_helper(data):
+    data_points = np.array(data.data)
+    waypoints = data_points.reshape(data_points.shape[0]//2, 2)
+    return waypoints
 
 def gnss_imu_callback_helper(data):
     try:
