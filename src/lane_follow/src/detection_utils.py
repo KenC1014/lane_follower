@@ -19,12 +19,14 @@ def gradient_thresh(img):
         img = cv2.GaussianBlur(img, ksize=(ksize, ksize), sigmaX=sigma)
         img = cv2.medianBlur(img, ksize=3)
         img_edges = cv2.Sobel(img, ddepth=cv2.CV_64F, dx=1, dy=0, ksize=7)
+        # cv2.imwrite("edges.jpg", img_edges)
+
         min_threshold = 128
         max_threshold = 255
         binary_output = np.zeros_like(img).astype(np.uint8)
         binary_output[(min_threshold <= img_edges) & (img_edges < max_threshold)] = 1
         ####
-
+        # cv2.imwrite("post_gradient.jpg", binary_output * 255)
         return binary_output
 
 
@@ -47,6 +49,7 @@ def color_thresh(img):
         binary_output[mask_h == 1] = 0
         ####
 
+        # cv2.imwrite("post_color.jpg", binary_output * 255)
         return binary_output
 
 
@@ -59,12 +62,16 @@ def combinedBinaryImage(img):
         ## Here you can use as many methods as you want.
         # cv2.imwrite("test_raw.jpg", img)
         ## TODO
-        SobelOutput = gradient_thresh(img)
-        ColorOutput = color_thresh(img)
+        # SobelOutput = gradient_thresh(img)
+        # ColorOutput = color_thresh(img)
         ####
 
-        binaryImage = np.zeros_like(SobelOutput)
-        binaryImage[(ColorOutput==1)|(SobelOutput==1)] = 1
+        # binaryImage = np.zeros_like(SobelOutput)
+        # binaryImage[(ColorOutput==1)|(SobelOutput==1)] = 1
+
+        binaryImage = cv2.Canny(img, 100, 200)
+        cv2.imwrite("combine.jpg", binaryImage)
+
         # Remove noise from binary image
         binaryImage = morphology.remove_small_objects(binaryImage.astype('bool'),min_size=50,connectivity=2)
 
@@ -83,56 +90,47 @@ def perspective_transform(img, mode="front", verbose=False):
         h, w = img.shape
 
         # front camera view
-        transform_points = {"x_tl": 517,
-                            "x_tr": 760,
-                            "y_t": 427,
-                            "x_bl": 302,
-                            "x_br": 1050,
-                            "y_b": 660,
-                            "y_t_trans": 0,
-                            "y_b_shift": 0
-                            }
-        
+        x_tl = 640 + (552 - 690) // 2
+        x_tr = w - x_tl
+        y_t = 403
+        x_bl = 640 + (314 - 995) // 2
+        x_br = w - x_bl
+        y_b = h
+        x_l_trans = x_bl
+        x_r_trans = x_br
+        y_t_trans = 0
+        y_b_trans = h
+
         # left camera view
         if mode == "left":
-            transform_points = {"x_tl": 243,
-                            "x_tr": 657,
-                            "y_t": 530,
-                            "x_bl": 734,
-                            "x_br": 1088,
-                            "y_b": 690,
-                            "y_t_trans": 0,
-                            "y_b_shift": 0
-                            }
+                x_tl = 243
+                x_tr = 657
+                y_t = 530
+                x_bl = 734
+                x_br = 1088
+                y_b = 690
+                x_l_trans = x_bl
+                x_r_trans = x_br
+                y_t_trans = 0
+                y_b_trans = y_b
+
+
         # right camera view
         elif mode == "right":
-           transform_points = {"x_tl": 517,
-                            "x_tr": 760,
-                            "y_t": 427,
-                            "x_bl": 302,
-                            "x_br": 1050,
-                            "y_b": 660,
-                            "y_t_trans": 0,
-                            "y_b_shift": 0
-                            }
-        
-        x_tl = transform_points["x_tl"]
-        x_tr = transform_points["x_tr"]
-        y_t = transform_points["y_t"]
-        x_bl = transform_points["x_bl"]
-        x_br = transform_points["x_br"]
-        y_b = transform_points["y_b"]
-        x_l_trans = 100
-        x_r_trans = w - 100
-        y_t_trans = transform_points["y_t_trans"]
-        y_b_shift = transform_points["y_b_shift"]
-        if y_b + y_b_shift > h:
-            y_b_shift = h - y_b
-        y_b_trans = y_b + y_b_shift
-        
+                x_tl = 517
+                x_tr = 760
+                y_t = 427
+                x_bl = 302
+                x_br = 1050
+                y_b = 660
+                x_l_trans = x_bl
+                x_r_trans = x_br
+                y_t_trans = 0
+                y_b_trans = y_b
+                
         camera_points = np.array([[x_tl, y_t], [x_tr, y_t],[x_br, y_b], [x_bl, y_b]], dtype=np.float32)
         birdeye_points = np.array([[x_l_trans, y_t_trans], [x_r_trans, y_t_trans],
-                                   [x_r_trans, y_b_trans], [x_l_trans, y_b_trans]], dtype=np.float32)
+                                [x_r_trans, y_b_trans], [x_l_trans, y_b_trans]], dtype=np.float32)
         M = cv2.getPerspectiveTransform(camera_points, birdeye_points)
         Minv = cv2.getPerspectiveTransform(birdeye_points, camera_points)
 
