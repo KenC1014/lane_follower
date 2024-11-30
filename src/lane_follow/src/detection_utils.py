@@ -62,13 +62,6 @@ def combinedBinaryImage(img):
         ## Here you can use as many methods as you want.
         # cv2.imwrite("test_raw.jpg", img)
         ## TODO
-        # SobelOutput = gradient_thresh(img)
-        # ColorOutput = color_thresh(img)
-        ####
-
-        # binaryImage = np.zeros_like(SobelOutput)
-        # binaryImage[(ColorOutput==1)|(SobelOutput==1)] = 1
-
         binaryImage = cv2.Canny(img, 100, 200)
         # cv2.imwrite("combine.jpg", binaryImage)
 
