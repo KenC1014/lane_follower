@@ -70,7 +70,7 @@ def combinedBinaryImage(img):
         # binaryImage[(ColorOutput==1)|(SobelOutput==1)] = 1
 
         binaryImage = cv2.Canny(img, 100, 200)
-        cv2.imwrite("combine.jpg", binaryImage)
+        # cv2.imwrite("combine.jpg", binaryImage)
 
         # Remove noise from binary image
         binaryImage = morphology.remove_small_objects(binaryImage.astype('bool'),min_size=50,connectivity=2)
