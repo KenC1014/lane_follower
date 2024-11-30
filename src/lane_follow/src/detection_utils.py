@@ -109,11 +109,11 @@ def perspective_transform(img, mode="front", verbose=False):
         y_t = 260
         x_bl = 5
         x_br = 615
-        y_b = 420
+        y_b = 410
         x_l_trans = x_bl
         x_r_trans = x_br
         y_t_trans = 0
-        y_b_trans = 420
+        y_b_trans = 410
 
         # left camera view
         if mode == "left":
