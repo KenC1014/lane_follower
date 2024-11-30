@@ -62,7 +62,16 @@ def combinedBinaryImage(img):
         ## Here you can use as many methods as you want.
         # cv2.imwrite("test_raw.jpg", img)
         ## TODO
-        binaryImage = cv2.Canny(img, 100, 200)
+
+        # Thesholds for real time
+        # min_thresh = 100
+        # max_thresh = 200
+
+        # Thesholds for simulation
+        min_thresh = 17
+        max_thresh = 50
+
+        binaryImage = cv2.Canny(img, min_thresh, max_thresh)
         # cv2.imwrite("combine.jpg", binaryImage)
 
         # Remove noise from binary image
@@ -82,17 +91,29 @@ def perspective_transform(img, mode="front", verbose=False):
         img = img.astype(np.uint8)
         h, w = img.shape
 
-        # front camera view
-        x_tl = 640 + (552 - 690) // 2
-        x_tr = w - x_tl
-        y_t = 403
-        x_bl = 640 + (314 - 995) // 2
-        x_br = w - x_bl
-        y_b = h
+        # Transform for real time
+        # x_tl = 640 + (552 - 690) // 2
+        # x_tr = w - x_tl
+        # y_t = 403
+        # x_bl = 640 + (314 - 995) // 2
+        # x_br = w - x_bl
+        # y_b = h
+        # x_l_trans = x_bl
+        # x_r_trans = x_br
+        # y_t_trans = 0
+        # y_b_trans = h
+
+        # Transform for GEM simulation
+        x_tl = 280
+        x_tr = 358
+        y_t = 260
+        x_bl = 5
+        x_br = 615
+        y_b = 420
         x_l_trans = x_bl
         x_r_trans = x_br
         y_t_trans = 0
-        y_b_trans = h
+        y_b_trans = 420
 
         # left camera view
         if mode == "left":
@@ -129,7 +150,7 @@ def perspective_transform(img, mode="front", verbose=False):
 
         # cv2.imwrite("test_prebird.jpg", img * 255)
         warped_img = cv2.warpPerspective(img, M, dsize=(w, h))
-        #cv2.imwrite("test_postbird.jpg", warped_img * 255)
+        # cv2.imwrite("test_postbird.jpg", warped_img * 255)
         ####
 
         return warped_img, M, Minv

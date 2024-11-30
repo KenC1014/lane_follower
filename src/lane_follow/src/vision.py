@@ -13,8 +13,10 @@ class lanenet_detector():
         self.bridge = CvBridge()
 
         # Subscribers
+        # Uncomment this line for lane detection of GEM car in Gazebo
+        self.sub_image = rospy.Subscriber('/gem/front_single_camera/front_single_camera/image_raw', Image, self.img_front_callback, queue_size=1)
         # Front camera topic
-        self.sub_image = rospy.Subscriber('/zed2/zed_node/rgb/image_rect_color', Image, self.img_front_callback, queue_size=1)
+        # self.sub_image = rospy.Subscriber('/zed2/zed_node/rgb/image_rect_color', Image, self.img_front_callback, queue_size=1)
         # Left side camera topic
         # self.left_image = rospy.Subscriber('/camera_fl/arena_camera_node/image_raw', Image, self.img_left_callback, queue_size=1)
         # Right side camera topic
