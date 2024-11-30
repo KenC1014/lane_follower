@@ -1,7 +1,6 @@
 import rospy
 from callbacks import waypoints_callback_helper
 from std_msgs.msg import Int16MultiArray
-from Line import Line
 
 
 class action_unit():
@@ -15,7 +14,6 @@ class action_unit():
         print("waypoints", waypoints)
 
     
-
 if __name__ == '__main__':
     # init args
     rospy.init_node('action_node', anonymous=True)
