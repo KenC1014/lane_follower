@@ -90,6 +90,7 @@ def perspective_transform(img, mode="front", verbose=False):
         ## TODO
         img = img.astype(np.uint8)
         h, w = img.shape
+        print(h,w)
 
         # Transform for real time
         # x_tl = 640 + (552 - 690) // 2
@@ -115,32 +116,32 @@ def perspective_transform(img, mode="front", verbose=False):
         y_t_trans = 0
         y_b_trans = 405
 
-        # left camera view
-        if mode == "left":
-                x_tl = 243
-                x_tr = 657
-                y_t = 530
-                x_bl = 734
-                x_br = 1088
-                y_b = 690
-                x_l_trans = x_bl
-                x_r_trans = x_br
-                y_t_trans = 0
-                y_b_trans = y_b
+        # # left camera view
+        # if mode == "left":
+        #         x_tl = 243
+        #         x_tr = 657
+        #         y_t = 530
+        #         x_bl = 734
+        #         x_br = 1088
+        #         y_b = 690
+        #         x_l_trans = x_bl
+        #         x_r_trans = x_br
+        #         y_t_trans = 0
+        #         y_b_trans = y_b
 
 
-        # right camera view
-        elif mode == "right":
-                x_tl = 517
-                x_tr = 760
-                y_t = 427
-                x_bl = 302
-                x_br = 1050
-                y_b = 660
-                x_l_trans = x_bl
-                x_r_trans = x_br
-                y_t_trans = 0
-                y_b_trans = y_b
+        # # right camera view
+        # elif mode == "right":
+        #         x_tl = 517
+        #         x_tr = 760
+        #         y_t = 427
+        #         x_bl = 302
+        #         x_br = 1050
+        #         y_b = 660
+        #         x_l_trans = x_bl
+        #         x_r_trans = x_br
+        #         y_t_trans = 0
+        #         y_b_trans = y_b
                 
         camera_points = np.array([[x_tl, y_t], [x_tr, y_t],[x_br, y_b], [x_bl, y_b]], dtype=np.float32)
         birdeye_points = np.array([[x_l_trans, y_t_trans], [x_r_trans, y_t_trans],
