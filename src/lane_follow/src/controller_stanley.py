@@ -126,11 +126,16 @@ class Stanley(object):
         # self.lon        = 0.0
         # self.heading    = 0.0
 
-        # self.speed_sub  = rospy.Subscriber("/pacmod/parsed_tx/vehicle_speed_rpt", VehicleSpeedRpt, self.speed_callback)
-        self.speed      = 0.0
 
-        # self.stanley_pub = rospy.Publisher('/gem/stanley_gnss_cmd', AckermannDrive, queue_size=1)
-        self.stanley_pub = rospy.Publisher("/ackermann_cmd", AckermannDrive, queue_size=1)
+        #gem
+        self.speed_sub  = rospy.Subscriber("/pacmod/parsed_tx/vehicle_speed_rpt", VehicleSpeedRpt, self.speed_callback)
+        #gazebo
+        #self.speed      = 0.0
+
+        #gem
+        self.stanley_pub = rospy.Publisher('/gem/stanley_gnss_cmd', AckermannDrive, queue_size=1)
+        #gazebo
+        #self.stanley_pub = rospy.Publisher("/ackermann_cmd", AckermannDrive, queue_size=1)
 
         self.ackermann_msg                         = AckermannDrive()
         self.ackermann_msg.steering_angle_velocity = 0.0
@@ -183,20 +188,22 @@ class Stanley(object):
         self.waypoint_x = x2
         self.waypoint_y = y2
         self.waypoint_heading = heading
+
     # Get predefined waypoints based on GNSS
     def read_waypoints(self):
 
         # read recorded GPS lat, lon, heading
-        dirname  = os.path.dirname(__file__)
-        filename = os.path.join(dirname, './wps.csv')
+        # dirname  = os.path.dirname(__file__)
+        # filename = os.path.join(dirname, './wps.csv')
 
-        with open(filename) as f:
-            path_points = [tuple(line) for line in csv.reader(f)]
+        # with open(filename) as f:
+        #     path_points = [tuple(line) for line in csv.reader(f)]
 
-        # x towards East and y towards North
-        self.path_points_lon_x   = [float(point[0]) for point in path_points] # longitude
-        self.path_points_lat_y   = [float(point[1]) for point in path_points] # latitude
-        self.path_points_heading = [float(point[2]) for point in path_points] # heading
+        # # x towards East and y towards North
+        # self.path_points_lon_x   = [float(point[0]) for point in path_points] # longitude
+        # self.path_points_lat_y   = [float(point[1]) for point in path_points] # latitude
+        # self.path_points_heading = [float(point[2]) for point in path_points] # heading
+
         # subscribe to waypoints
         self.sub_waypoints = rospy.Subscriber('lane_detection/waypoints', Int16MultiArray, self.waypoint_callback, queue_size=1)
 
@@ -216,46 +223,46 @@ class Stanley(object):
         return steer_angle
 
 
-    # Conversion of Lon & Lat to X & Y
-    def wps_to_local_xy_stanley(self, lon_wp, lat_wp):
-        # convert GNSS waypoints into local fixed frame reprented in x and y
-        lon_wp_x, lat_wp_y = axy.ll2xy(lat_wp, lon_wp, self.olat, self.olon)
-        return -lon_wp_x, -lat_wp_y   
+    # # Conversion of Lon & Lat to X & Y
+    # def wps_to_local_xy_stanley(self, lon_wp, lat_wp):
+    #     # convert GNSS waypoints into local fixed frame reprented in x and y
+    #     lon_wp_x, lat_wp_y = axy.ll2xy(lat_wp, lon_wp, self.olat, self.olon)
+    #     return -lon_wp_x, -lat_wp_y   
 
 
-    # Conversion of GNSS heading to vehicle heading
-    def heading_to_yaw_stanley(self, heading_curr):
-        if (heading_curr >= 0 and heading_curr < 90):
-            yaw_curr = np.radians(-heading_curr-90)
-        else:
-            yaw_curr = np.radians(-heading_curr+270)
-        return yaw_curr
+    # # Conversion of GNSS heading to vehicle heading
+    # def heading_to_yaw_stanley(self, heading_curr):
+    #     if (heading_curr >= 0 and heading_curr < 90):
+    #         yaw_curr = np.radians(-heading_curr-90)
+    #     else:
+    #         yaw_curr = np.radians(-heading_curr+270)
+    #     return yaw_curr
 
 
-    # Get vehicle states: x, y, yaw
-    def get_gem_state(self):
+    # # Get vehicle states: x, y, yaw
+    # def get_gem_state(self):
 
-        # vehicle gnss heading (yaw) in degrees
-        # vehicle x, y position in fixed local frame, in meters
-        # rct_errorerence point is located at the center of GNSS antennas
-        local_x_curr, local_y_curr = self.wps_to_local_xy_stanley(self.lon, self.lat)
+    #     # vehicle gnss heading (yaw) in degrees
+    #     # vehicle x, y position in fixed local frame, in meters
+    #     # rct_errorerence point is located at the center of GNSS antennas
+    #     local_x_curr, local_y_curr = self.wps_to_local_xy_stanley(self.lon, self.lat)
 
-        # heading to yaw (degrees to radians)
-        # heading is calculated from two GNSS antennas
-        curr_yaw = self.heading_to_yaw_stanley(self.heading) 
+    #     # heading to yaw (degrees to radians)
+    #     # heading is calculated from two GNSS antennas
+    #     curr_yaw = self.heading_to_yaw_stanley(self.heading) 
 
-        # rct_errorerence point is located at the center of front axle
-        curr_x = local_x_curr + self.offset * np.cos(curr_yaw)
-        curr_y = local_y_curr + self.offset * np.sin(curr_yaw)
+    #     # rct_errorerence point is located at the center of front axle
+    #     curr_x = local_x_curr + self.offset * np.cos(curr_yaw)
+    #     curr_y = local_y_curr + self.offset * np.sin(curr_yaw)
 
-        return round(curr_x, 3), round(curr_y, 3), round(curr_yaw, 4)
+    #     return round(curr_x, 3), round(curr_y, 3), round(curr_yaw, 4)
 
 
-    # Find close yaw in predefined GNSS waypoint list
-    def find_close_yaw(self, arr, val):
-        diff_arr = np.array( np.abs( np.abs(arr) - np.abs(val) ) )
-        idx = np.where(diff_arr < 0.5)
-        return idx
+    # # Find close yaw in predefined GNSS waypoint list
+    # def find_close_yaw(self, arr, val):
+    #     diff_arr = np.array( np.abs( np.abs(arr) - np.abs(val) ) )
+    #     idx = np.where(diff_arr < 0.5)
+    #     return idx
 
 
     # Conversion to -pi to pi
@@ -269,9 +276,9 @@ class Stanley(object):
 
         return angle
 
-    # Computes the Euclidean distance between two 2D points
-    def dist(self, p1, p2):
-        return round(np.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2), 3)
+    # # Computes the Euclidean distance between two 2D points
+    # def dist(self, p1, p2):
+    #     return round(np.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2), 3)
 
     # Start Stanley controller
     def start_stanley(self):
@@ -327,51 +334,55 @@ class Stanley(object):
             if (filt_vel < 0.2):
                 self.ackermann_msg.acceleration   = throttle_percent
                 self.ackermann_msg.steering_angle = 0
-                # print(self.ackermann_msg.steering_angle)
+                print("Steering angle: " + str(self.ackermann_msg.steering_angle))
             else:
                 self.ackermann_msg.acceleration   = throttle_percent
                 self.ackermann_msg.steering_angle = round(steering_angle,1)
-            #     print(self.ackermann_msg.steering_angle)
+                print("Steering angle: " + str(self.ackermann_msg.steering_angle))
             # print(self.ackermann_msg.acceleration)
-            self.ackermann_msg.speed = 4
+            
+            if (steering_angle > 0.5):
+                self.ackermann_msg.speed = 2
+            else:
+                self.ackermann_msg.speed = 4
             # ------------------------------------------------------------------------------------------------ 
 
             self.stanley_pub.publish(self.ackermann_msg)
 
             self.rate.sleep()
 
-    def getModelState(self):
-            # Get the current state of the vehicle
-            # Input: None
-            # Output: ModelState, the state of the vehicle, contain the
-            #   position, orientation, linear velocity, angular velocity
-            #   of the vehicle
-            rospy.wait_for_service('/gazebo/get_model_state')
-            try:
-                serviceResponse = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
-                resp = serviceResponse(model_name='gem')
-            except rospy.ServiceException as exc:
-                rospy.loginfo("Service did not process request: "+str(exc))
-                resp = GetModelStateResponse()
-                resp.success = False
-            return resp
-    def extract_vehicle_info(self, currentPose):
+    # def getModelState(self):
+    #         # Get the current state of the vehicle
+    #         # Input: None
+    #         # Output: ModelState, the state of the vehicle, contain the
+    #         #   position, orientation, linear velocity, angular velocity
+    #         #   of the vehicle
+    #         rospy.wait_for_service('/gazebo/get_model_state')
+    #         try:
+    #             serviceResponse = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
+    #             resp = serviceResponse(model_name='gem')
+    #         except rospy.ServiceException as exc:
+    #             rospy.loginfo("Service did not process request: "+str(exc))
+    #             resp = GetModelStateResponse()
+    #             resp.success = False
+    #         return resp
+    # def extract_vehicle_info(self, currentPose):
 
-        ####################### TODO: Your TASK 1 code starts Here #######################
-        pos_x, pos_y, vel, yaw = 0, 0, 0, 0
-        pos_x = currentPose.pose.position.x
-        pos_y = currentPose.pose.position.y
-        pos_z = currentPose.pose.position.z
-        vel_x = currentPose.twist.linear.x
-        vel_y = currentPose.twist.linear.y
-        vel_z = currentPose.twist.linear.z
-        vel = np.sqrt(vel_x*vel_x+vel_y*vel_y+vel_z*vel_z)
-        current_orientation = currentPose.pose.orientation
-        roll, pitch, yaw = quaternion_to_euler(current_orientation.x, current_orientation.y, current_orientation.z, current_orientation.w)
+    #     ####################### TODO: Your TASK 1 code starts Here #######################
+    #     pos_x, pos_y, vel, yaw = 0, 0, 0, 0
+    #     pos_x = currentPose.pose.position.x
+    #     pos_y = currentPose.pose.position.y
+    #     pos_z = currentPose.pose.position.z
+    #     vel_x = currentPose.twist.linear.x
+    #     vel_y = currentPose.twist.linear.y
+    #     vel_z = currentPose.twist.linear.z
+    #     vel = np.sqrt(vel_x*vel_x+vel_y*vel_y+vel_z*vel_z)
+    #     current_orientation = currentPose.pose.orientation
+    #     roll, pitch, yaw = quaternion_to_euler(current_orientation.x, current_orientation.y, current_orientation.z, current_orientation.w)
 
-        ####################### TODO: Your Task 1 code ends Here #######################
+    #     ####################### TODO: Your Task 1 code ends Here #######################
 
-        return pos_x, pos_y, vel, yaw # note that yaw is in radian
+    #     return pos_x, pos_y, vel, yaw # note that yaw is in radian
     def stop(self):
         newAckermannCmd = AckermannDrive()
         newAckermannCmd.speed = 0
