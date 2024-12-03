@@ -20,10 +20,6 @@
       <grid>0</grid>
     </scene>
     <state world_name='default'>
-      <sim_time>68342 420000000</sim_time>
-      <real_time>5094 76358083</real_time>
-      <wall_time>1600477580 599765045</wall_time>
-      <iterations>2591186</iterations>
       <model name='(DS) Curved Road - 100m_3'>
         <pose frame=''>257.705 -53.7644 0 0 -0 0</pose>
         <scale>1 1 1</scale>
@@ -220,7 +216,7 @@
           <geometry>
             <plane>
               <normal>0 0 1</normal>
-              <size>10000 10000</size>
+              <size>1000 1000</size>
             </plane>
           </geometry>
           <material>

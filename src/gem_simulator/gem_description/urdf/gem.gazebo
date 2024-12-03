@@ -1,32 +1,6 @@
 <?xml version="1.0" ?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-
-  <gazebo reference="right_steering_hinge_link">
-    <mu1>0.9</mu1>
-    <material>Gazebo/Blue</material>
-  </gazebo>
-
-  <gazebo reference="left_steering_hinge_link">
-    <mu1>0.9</mu1>
-    <material>Gazebo/Blue</material>
-  </gazebo>
-
-  <gazebo reference="front_left_wheel_link">
-    <mu1>0.9</mu1>
-    <mu2>0.9</mu2>
-    <minDepth>0.005</minDepth>
-    <kp>1e8</kp>
-    <material>Gazebo/Black</material>
-  </gazebo>
-
-  <gazebo reference="front_right_wheel_link">
-    <mu1>0.9</mu1>
-    <mu2>0.9</mu2>
-    <minDepth>0.005</minDepth>
-    <kp>1e8</kp>
-    <material>Gazebo/Black</material>
-  </gazebo>
-
+  
   <gazebo reference="right_fixed_hinge_link">
     <material>Gazebo/Red</material>
   </gazebo>
@@ -34,10 +8,47 @@
   <gazebo reference="left_fixed_hinge_link">
     <material>Gazebo/Red</material>
   </gazebo>
+  
+  <gazebo reference="right_steering_hinge_link">
+    <mu1>10000</mu1>
+    <mu2>100000000</mu2>
+    <kp>1000000</kp>
+    <kd>1e8</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>100.0</maxVel>
+    <material>Gazebo/Blue</material>
+  </gazebo>
+
+  <gazebo reference="left_steering_hinge_link">
+    <mu1>10000</mu1>
+    <mu2>100000000</mu2>
+    <kp>1000000</kp>
+    <kd>1e8</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>100.0</maxVel>
+    <material>Gazebo/Blue</material>
+  </gazebo>
+
+  <gazebo reference="front_left_wheel_link">
+    <mu1>0.9</mu1>
+    <mu2>1000000</mu2>
+    <minDepth>0.005</minDepth>
+    <kp>1e8</kp>
+    <material>Gazebo/Black</material>
+  </gazebo>
+
+  <gazebo reference="front_right_wheel_link">
+    <mu1>0.9</mu1>
+    <mu2>1000000</mu2>
+    <minDepth>0.005</minDepth>
+    <kp>1e8</kp>
+    <material>Gazebo/Black</material>
+  </gazebo>
+  
 
   <gazebo reference="rear_left_wheel_link">
     <mu1>0.9</mu1>
-    <mu2>0.9</mu2>
+    <mu2>1000000</mu2>
     <minDepth>0.005</minDepth>
     <kp>1e8</kp>
     <material>Gazebo/Black</material>
@@ -45,12 +56,14 @@
 
   <gazebo reference="rear_right_wheel_link">
     <mu1>0.9</mu1>
-    <mu2>0.9</mu2>
+    <mu2>1000000</mu2>
     <minDepth>0.005</minDepth>
     <kp>1e8</kp>
     <material>Gazebo/Black</material>
-  </gazebo>
+  </gazebo>  
 
+
+  <!-- ************************************** --> 
 
   <!-- colors used by Gazebo -->
 
@@ -66,9 +79,11 @@
     <material>Gazebo/White</material>
   </gazebo>
 
+  <!--
   <gazebo reference="front_camera_link">
     <material>Gazebo/Black</material>
   </gazebo>
+  -->
 
   <gazebo reference="front_rack_link">
     <material>Gazebo/Black</material>
@@ -186,17 +201,23 @@
   </gazebo>
 
 
-  <!-- **************************************** Need Modification Below *********************************************** -->
+  <!-- ***************************** camera ***************************** -->
 
-  <!-- camera -->
   <gazebo reference="front_single_camera_link">
     <sensor type="camera" name="front_single_camera_sensor">
       <update_rate>30.0</update_rate>
-      <camera name="front_single_camera">
+      <camera>
+      <!--
+      <camera name="front_single_camera"> 
+      -->
         <horizontal_fov>1.5707963</horizontal_fov>
         <image>
           <width>640</width>
           <height>480</height>
+          <!--
+          <width>960</width>
+          <height>540</height>
+          -->
           <format>R8G8B8</format>
         </image>
         <clip>
@@ -212,9 +233,9 @@
       <plugin name="front_single_camera_controller" filename="libgazebo_ros_camera.so">
         <alwaysOn>true</alwaysOn>
         <updateRate>0.0</updateRate>
-        <cameraName>gem/front_single_camera</cameraName>
-        <imageTopicName>front_single_camera/image_raw</imageTopicName>
-        <cameraInfoTopicName>gem/front_single_camera/camera_info</cameraInfoTopicName>
+        <cameraName>front_single_camera</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
         <frameName>front_single_camera_link</frameName>
         <hackBaseline>0.07</hackBaseline>
         <distortionK1>0.0</distortionK1>
@@ -226,7 +247,8 @@
     </sensor>
   </gazebo>
 
-  <!-- IMU -->
+  <!-- ***************************** IMU ***************************** -->
+  
   <gazebo>
     <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
       <alwaysOn>true</alwaysOn>
@@ -235,22 +257,23 @@
       <topicName>imu</topicName>
       <serviceName>imu_service</serviceName>
       <gaussianNoise>0.0</gaussianNoise>
-      <updateRate>20.0</updateRate>
+      <updateRate>50.0</updateRate>
     </plugin>
   </gazebo>
   
-  <!-- GPS -->
+  <!-- ***************************** GPS ***************************** -->
+  
   <gazebo>
     <plugin name="gazebo_ros_gps" filename="libhector_gazebo_ros_gps.so">
-    <updateRate>5.0</updateRate>
+    <updateRate>20.0</updateRate>
     <bodyName>GPS_link</bodyName>
     <frameId>GPS_link</frameId>
     <topicName>/gps/fix</topicName>
     <velocityTopicName>/gps/fix_velocity</velocityTopicName>
-    <referenceLatitude>-30.06022459407145675</referenceLatitude>
-    <referenceLongitude>-51.173913575780311191</referenceLongitude>
+    <referenceLatitude>40.09302494</referenceLatitude>
+    <referenceLongitude>-88.23575484</referenceLongitude>
     <referenceHeading>90</referenceHeading>
-    <referenceAltitude>10</referenceAltitude>
+    <referenceAltitude>220</referenceAltitude>
     <offset>0 0 0</offset>
     <drift>0.001 0.001 0.001</drift>
     <gaussianNoise>0.05 0.05 0.05</gaussianNoise>
@@ -263,11 +286,12 @@
     </plugin>
   </gazebo>
 
-  <!-- Front Sonar -->
+  <!-- ***************************** Front Sonar ***************************** -->
+  
   <gazebo reference="front_sonar_link">
     <sensor type="ray" name="front_sonar_sensor">
       <always_on>true</always_on>
-      <update_rate>10</update_rate>
+      <update_rate>20</update_rate>
       <pose>0 0 0 0 0 0</pose>
       <visualize>false</visualize>
       <ray>
@@ -299,11 +323,12 @@
     </sensor>
   </gazebo>
 
-  <!-- Rear Sonar -->
+  <!-- ***************************** Rear Sonar ***************************** -->
+  
   <gazebo reference="rear_sonar_link">
     <sensor type="ray" name="rear_sonar_sensor">
       <always_on>true</always_on>
-      <update_rate>10</update_rate>
+      <update_rate>20</update_rate>
       <pose>0 0 0 0 0 0</pose>
       <visualize>false</visualize>
       <ray>
@@ -335,7 +360,8 @@
     </sensor>
   </gazebo>
 
-  <!-- stereo camera -->
+  <!-- ***************************** stereo camera ***************************** -->
+  
   <gazebo reference="stereo_camera_link">
     <sensor type="multicamera" name="stereo_camera">
       <update_rate>30.0</update_rate>

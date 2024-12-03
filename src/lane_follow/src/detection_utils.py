@@ -64,18 +64,18 @@ def combinedBinaryImage(img):
         ## TODO
 
         # Thesholds for real time
-        # min_thresh = 100
-        # max_thresh = 200
+        min_thresh = 170
+        max_thresh = 200
 
         # Thesholds for simulation
-        min_thresh = 17
-        max_thresh = 50
+        # min_thresh = 17
+        # max_thresh = 50
 
         binaryImage = cv2.Canny(img, min_thresh, max_thresh)
         # cv2.imwrite("combine.jpg", binaryImage)
 
         # Remove noise from binary image
-        binaryImage = morphology.remove_small_objects(binaryImage.astype('bool'),min_size=50,connectivity=2)
+        binaryImage = morphology.remove_small_objects(binaryImage.astype('bool'),min_size=10,connectivity=2)
 
         return binaryImage
 

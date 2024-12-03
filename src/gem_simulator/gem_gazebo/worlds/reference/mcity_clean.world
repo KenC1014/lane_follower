@@ -75,11 +75,11 @@
       <elevation>0</elevation>
       <heading_deg>0</heading_deg>
     </spherical_coordinates>
+    
+    
     <state world_name='default'>
-      <sim_time>2603 302000000</sim_time>
-      <real_time>34 398136740</real_time>
-      <wall_time>1595280626 581330931</wall_time>
-      <iterations>34223</iterations>
+    
+    
       <model name='Stop Sign'>
         <pose frame=''>8 -0.95 0.31 0 0 -1.5707</pose>
         <scale>1 1 1</scale>
@@ -90,6 +90,8 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
+      
+      
       <model name='cafe'>
         <pose frame=''>0.178485 0.205231 0 0 -0 0</pose>
         <scale>1 1 1</scale>
@@ -100,10 +102,15 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
+      
+      
       <light name='sun'>
         <pose frame=''>0.5 0 1 0 -0 0</pose>
       </light>
+      
     </state>
+    
+    
     <gui fullscreen='0'>
       <camera name='user_camera'>
         <pose frame=''>-117.253 27.3161 75.083 -0 0.529999 -0.056413</pose>
@@ -111,6 +118,8 @@
         <projection_type>perspective</projection_type>
       </camera>
     </gui>
+    
+    
     <model name='Stop Sign'>
       <static>1</static>
       <link name='link'>
@@ -154,6 +163,9 @@
       </link>
       <pose frame=''>8.5636 -39.7801 0 0 -0 0</pose>
     </model>
+    
+    
+    
     <gui fullscreen='0'>
       <camera name='user_camera'>
         <pose frame=''>-44.1984 11.3628 21.3685 0 0.367645 -0.471834</pose>
@@ -162,4 +174,13 @@
       </camera>
     </gui>
   </world>
+  
 </sdf>
+
+
+
+
+
+
+
+

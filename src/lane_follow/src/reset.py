@@ -56,10 +56,16 @@ def set_position(x = 0,y = 0, yaw = 0):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = 'Set the x, y position of the vehicle')
 
-    x_default = 0
-    y_default = -98.5
-    yaw_default = 0
+    # Reset Highbay pos
+    # x_default = -22
+    # y_default = -21.3
+    # yaw_default = 0
 
+    # Reset normal pos
+    x_default = 0
+    y_default = 0
+    yaw_default = 0
+    
     parser.add_argument('--x', type = float, help = 'x position of the vehicle.', default = x_default)
     parser.add_argument('--y', type = float, help = 'y position of the vehicle.', default = y_default)
     parser.add_argument('--yaw', type=float, help = 'yaw of the vehicle.', default = yaw_default)

@@ -1,5 +1,17 @@
 #!/usr/bin/env python
 
+#================================================================
+# File name: gem_control.py                                                                  
+# Description: take care of GEM control in Gazebo                                                             
+# Author: Hang Cui
+# Email: hangcui3@illinois.edu                                                                     
+# Date created: 06/05/2021                                                                
+# Date last modified: 07/12/2021                                                          
+# Version: 0.1                                                                    
+# Usage: rosrun gem_gazebo gem_control.py                                                                    
+# Python version: 3.8                                                                                                      
+#================================================================
+
 import math
 import numpy as np
 import threading

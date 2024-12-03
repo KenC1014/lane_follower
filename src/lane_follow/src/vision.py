@@ -14,7 +14,7 @@ class lanenet_detector():
 
         # Subscribers
         # Uncomment this line for lane detection of GEM car in Gazebo
-        self.sub_image = rospy.Subscriber('/gem/front_single_camera/front_single_camera/image_raw', Image, self.img_front_callback, queue_size=1)
+        self.sub_image = rospy.Subscriber('/front_single_camera/image_raw', Image, self.img_front_callback, queue_size=1)
         # Front camera topic
         # self.sub_image = rospy.Subscriber('/zed2/zed_node/rgb/image_rect_color', Image, self.img_front_callback, queue_size=1)
         # Left side camera topic
