@@ -90,7 +90,6 @@ def perspective_transform(img, mode="front", verbose=False):
         ## TODO
         img = img.astype(np.uint8)
         h, w = img.shape
-        print(h,w)
 
         # Transform for real time
         # x_tl = 640 + (552 - 690) // 2

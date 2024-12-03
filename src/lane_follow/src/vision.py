@@ -14,13 +14,13 @@ class lanenet_detector():
 
         # Subscribers
         # Uncomment this line for lane detection of GEM car in Gazebo
-        # self.sub_image = rospy.Subscriber('/gem/front_single_camera/front_single_camera/image_raw', Image, self.img_front_callback, queue_size=1)
+        self.sub_image = rospy.Subscriber('/gem/front_single_camera/front_single_camera/image_raw', Image, self.img_front_callback, queue_size=1)
         # Front camera topic
-        self.sub_image = rospy.Subscriber('/zed2/zed_node/rgb/image_rect_color', Image, self.img_front_callback, queue_size=1)
+        # self.sub_image = rospy.Subscriber('/zed2/zed_node/rgb/image_rect_color', Image, self.img_front_callback, queue_size=1)
         # Left side camera topic
-        self.left_image = rospy.Subscriber('/camera_fl/arena_camera_node/image_raw', Image, self.img_left_callback, queue_size=1)
+        # self.left_image = rospy.Subscriber('/camera_fl/arena_camera_node/image_raw', Image, self.img_left_callback, queue_size=1)
         # Right side camera topic
-        self.right_image = rospy.Subscriber('/camera_fr/arena_camera_node/image_raw', Image, self.img_right_callback, queue_size=1)
+        # self.right_image = rospy.Subscriber('/camera_fr/arena_camera_node/image_raw', Image, self.img_right_callback, queue_size=1)
         # GNSS IMU topic
         # self.gnss_imu = rospy.Subscriber('/septentrio_gnss/imu', Imu, self.gnss_imu_callback, queue_size=1)
         # GNSS Nav topic

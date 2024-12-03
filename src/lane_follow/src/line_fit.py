@@ -116,14 +116,15 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 		left_fit = np.polyfit(lefty, leftx, deg=2)
 		right_fit = np.polyfit(righty, rightx, deg=2)
 
-		start_pos = 30
+		start_pos = height - 50
+		end_pos = max(min(lefty), min(righty))
 		num_wps = 5
 
 		if turn != "front":
 			num_wps = 15
 
-		wps_left_y = np.linspace(start_pos, max(lefty), num_wps).astype(int)
-		wps_right_y = np.linspace(start_pos, max(righty), num_wps).astype(int)
+		wps_left_y = np.linspace(start_pos, end_pos, num_wps).astype(int)
+		wps_right_y = np.linspace(start_pos, end_pos, num_wps).astype(int)
 
 		x_left_poly = np.poly1d(left_fit)
 		wps_left_x = x_left_poly(wps_left_y).astype(int)
