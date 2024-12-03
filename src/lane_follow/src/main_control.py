@@ -5,7 +5,6 @@ import argparse
 from gazebo_msgs.msg import  ModelState
 from controller_stanley import Stanley
 import time
-from waypoint_list import WayPoints
 from utils import euler_to_quaternion, quaternion_to_euler
 from matplotlib import pyplot as plt
 
