@@ -116,7 +116,7 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 		left_fit = np.polyfit(lefty, leftx, deg=2)
 		right_fit = np.polyfit(righty, rightx, deg=2)
 
-		start_pos = height - 50
+		start_pos = height - 80
 		# end_pos = max(min(lefty), min(righty))
 		end_pos = 0.42 * height
 		num_wps = 5
@@ -197,7 +197,7 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 			for i in range(length):
 				diff = abs(prev_wps_x[i] - waypoints_x[i])
 				if i == 0:
-					if diff < 8:
+					if diff < 9:
 						waypoints[i] = prev_wps[i]
 				else:
 					if diff < 5:
