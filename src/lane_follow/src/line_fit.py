@@ -118,7 +118,7 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 
 		start_pos = height - 80
 		# end_pos = max(min(lefty), min(righty))
-		end_pos = 0.42 * height
+		end_pos = 0.4 * height
 		num_wps = 5
 
 		# if turn != "front":
@@ -195,6 +195,13 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 		if prev_wps is not None and len(prev_wps) > 0:
 			prev_wps_x = prev_wps[:,0]
 			waypoints_x = waypoints[:,0]
+
+			# Average based stablizer
+			# diff = np.sum(abs(prev_wps_x - waypoints_x))
+			# if diff < 20:
+			# 	waypoints = prev_wps
+
+			# Point wise based stablizer
 			length = min(len(waypoints_x), len(prev_wps_x))
 			for i in range(length):
 				diff = abs(prev_wps_x[i] - waypoints_x[i])
@@ -322,6 +329,7 @@ def bird_fit(binary_warped, ret, mode="front", save_file=None):
 	nonzeroy = ret['nonzeroy']
 	left_lane_inds = ret['left_lane_inds']
 	right_lane_inds = ret['right_lane_inds']
+	waypoints = ret['waypoints']
 
 	# Create an image to draw on and an image to show the selection window
 	out_img = (np.dstack((binary_warped, binary_warped, binary_warped))*255).astype('uint8')
@@ -381,9 +389,18 @@ def bird_fit(binary_warped, ret, mode="front", save_file=None):
 	# 	plt.ylim(720, 0)
 
 	# Draw the lane onto the warped blank image
-	cv2.fillPoly(window_img, np.int_([left_line_pts]), (0,255, 0))
-	cv2.fillPoly(window_img, np.int_([right_line_pts]), (0,255, 0))
+	# cv2.fillPoly(window_img, np.int_([left_line_pts]), (0,255, 0))
+	# cv2.fillPoly(window_img, np.int_([right_line_pts]), (0,255, 0))
 	result = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
+
+	# Draw waypoints
+	prev_c = waypoints[0]
+	for c in waypoints:
+		pc_x, pc_y = prev_c
+		c_x, c_y = c
+		cv2.circle(result, (c_x, c_y), 15, (255, 255, 255), -1)
+		cv2.line(result, (pc_x, pc_y), (c_x, c_y), (0, 255, 0), 9)
+		prev_c = c
 
 	plt.imshow(result)
 	plt.plot(left_fitx, ploty, color='yellow')
@@ -420,15 +437,15 @@ def final_viz(undist, m_inv, waypoints, wps_left, wps_right, turn):
 		cv2.line(color_warp, (pc_x, pc_y), (c_x, c_y), (255, 0, 0), 9)
 		prev_c = c
 
-	for c in wps_left:
-		pc_x, pc_y = prev_c
-		c_x, c_y = c
-		cv2.circle(color_warp, (c_x, c_y), 20, (0, 255, 255), -1)
+	# for c in wps_left:
+	# 	pc_x, pc_y = prev_c
+	# 	c_x, c_y = c
+	# 	cv2.circle(color_warp, (c_x, c_y), 20, (0, 255, 255), -1)
 
-	for c in wps_right:
-		pc_x, pc_y = prev_c
-		c_x, c_y = c
-		cv2.circle(color_warp, (c_x, c_y), 20, (0, 255, 0), -1)
+	# for c in wps_right:
+	# 	pc_x, pc_y = prev_c
+	# 	c_x, c_y = c
+	# 	cv2.circle(color_warp, (c_x, c_y), 20, (0, 255, 0), -1)
 
 	# Warp the blank back to original image space using inverse perspective matrix (Minv)
 	newwarp = cv2.warpPerspective(color_warp, m_inv, (undist.shape[1], undist.shape[0]))

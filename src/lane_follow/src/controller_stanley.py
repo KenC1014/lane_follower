@@ -360,8 +360,8 @@ class Stanley(object):
             f_delta_deg    = np.degrees(f_delta)
             print(f_delta)
             # print(f_delta_deg)
-            # steering_angle = f_delta_deg
-            steering_angle = self.front2steer(f_delta_deg)
+            steering_angle = f_delta_deg
+            # steering_angle = self.front2steer(f_delta_deg)
 
             if (filt_vel < 0.2):
                 self.ackermann_msg.acceleration   = throttle_percent
