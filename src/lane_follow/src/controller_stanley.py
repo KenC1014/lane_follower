@@ -192,16 +192,13 @@ class Stanley(object):
         self.steer = round(np.degrees(msg.output),1)
 
     def waypoint_callback(self, data):
-        x_coords = np.array(data.data)[0::2]
-        y_coords = np.array(data.data)[1::2]
-        print(waypoints_callback_helper(data))
-
-        x2 = (x_coords[1] + x_coords[2]) / 2
-        x1 = (x_coords[4] + x_coords[3]) / 2
-
-        y2 = (y_coords[1] + y_coords[2]) / 2
-        y1 = (y_coords[4] + y_coords[3]) / 2
-
+       
+        wp = waypoints_callback_helper(data)
+        print(wp)
+        x2 = wp[2][0]
+        y2 = wp[2][1]
+        x1 = wp[0][0]
+        y1 = wp[0][1]
         heading = np.arctan2(y2-y1, x2-x1)
         self.waypoint_x1 = x1
         self.waypoint_y1 = y1
@@ -301,6 +298,7 @@ class Stanley(object):
             x2 = self.waypoint_x2
             y2 = self.waypoint_y2
 
+            print(x1, y1)
             print(self.waypoint_x2, self.waypoint_y2, self.waypoint_heading)
             print(curr_x, curr_y, current_yaw)
             # vec_target_2_front = np.array([[curr_x-self.waypoint_x],[curr_y-self.waypoint_y]])
@@ -319,6 +317,7 @@ class Stanley(object):
             ct_error = float(ct_error)
 
             # heading error
+            print(self.waypoint_heading-current_yaw)
             theta_e = self.pi_2_pi(self.waypoint_heading-current_yaw) 
 
             # theta_e = self.target_path_points_yaw[target_point_idx]-curr_yaw 
@@ -326,6 +325,12 @@ class Stanley(object):
             print("Crosstrack Error: " + str(round(ct_error,3)) + ", Heading Error: " + str(theta_e_deg))
 
             # --------------------------- Longitudinal control using PD controller ---------------------------
+            
+            # SIM
+            curr_state = self.getModelState()
+            curr_x2, curr_y2, curr_vel, curr_yaw2 = self.extract_vehicle_info(curr_state)
+            self.speed = curr_vel
+            # print(curr_vel)
 
             filt_vel = np.squeeze(self.speed_filter.get_data(self.speed))
             # print(filt_vel)
@@ -347,12 +352,16 @@ class Stanley(object):
                 throttle_percent = 0.37
 
             # -------------------------------------- Stanley controller --------------------------------------
-
+            print(theta_e)
+            print(ct_error)
+            print(filt_vel)
             f_delta        = round(theta_e + np.arctan2(ct_error*0.4, filt_vel), 3)
             f_delta        = round(np.clip(f_delta, -0.61, 0.61), 3)
             f_delta_deg    = np.degrees(f_delta)
+            print(f_delta)
+            # print(f_delta_deg)
             # steering_angle = f_delta_deg
-            steering_angle = -self.front2steer(f_delta_deg)
+            steering_angle = self.front2steer(f_delta_deg)
 
             if (filt_vel < 0.2):
                 self.ackermann_msg.acceleration   = throttle_percent
@@ -384,38 +393,39 @@ class Stanley(object):
 
             self.rate.sleep()
 
-    # def getModelState(self):
-    #         # Get the current state of the vehicle
-    #         # Input: None
-    #         # Output: ModelState, the state of the vehicle, contain the
-    #         #   position, orientation, linear velocity, angular velocity
-    #         #   of the vehicle
-    #         rospy.wait_for_service('/gazebo/get_model_state')
-    #         try:
-    #             serviceResponse = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
-    #             resp = serviceResponse(model_name='gem')
-    #         except rospy.ServiceException as exc:
-    #             rospy.loginfo("Service did not process request: "+str(exc))
-    #             resp = GetModelStateResponse()
-    #             resp.success = False
-    #         return resp
-    # def extract_vehicle_info(self, currentPose):
+    def getModelState(self):
+            # Get the current state of the vehicle
+            # Input: None
+            # Output: ModelState, the state of the vehicle, contain the
+            #   position, orientation, linear velocity, angular velocity
+            #   of the vehicle
+            rospy.wait_for_service('/gazebo/get_model_state')
+            try:
+                serviceResponse = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
+                resp = serviceResponse(model_name='gem')
+            except rospy.ServiceException as exc:
+                rospy.loginfo("Service did not process request: "+str(exc))
+                resp = GetModelStateResponse()
+                resp.success = False
+            return resp
+    def extract_vehicle_info(self, currentPose):
 
-    #     ####################### TODO: Your TASK 1 code starts Here #######################
-    #     pos_x, pos_y, vel, yaw = 0, 0, 0, 0
-    #     pos_x = currentPose.pose.position.x
-    #     pos_y = currentPose.pose.position.y
-    #     pos_z = currentPose.pose.position.z
-    #     vel_x = currentPose.twist.linear.x
-    #     vel_y = currentPose.twist.linear.y
-    #     vel_z = currentPose.twist.linear.z
-    #     vel = np.sqrt(vel_x*vel_x+vel_y*vel_y+vel_z*vel_z)
-    #     current_orientation = currentPose.pose.orientation
-    #     roll, pitch, yaw = quaternion_to_euler(current_orientation.x, current_orientation.y, current_orientation.z, current_orientation.w)
+        ####################### TODO: Your TASK 1 code starts Here #######################
+        pos_x, pos_y, vel, yaw = 0, 0, 0, 0
+        pos_x = currentPose.pose.position.x
+        pos_y = currentPose.pose.position.y
+        pos_z = currentPose.pose.position.z
+        vel_x = currentPose.twist.linear.x
+        vel_y = currentPose.twist.linear.y
+        vel_z = currentPose.twist.linear.z
+        vel = np.sqrt(vel_x*vel_x+vel_y*vel_y+vel_z*vel_z)
+        current_orientation = currentPose.pose.orientation
+        roll, pitch, yaw = quaternion_to_euler(current_orientation.x, current_orientation.y, current_orientation.z, current_orientation.w)
 
-    #     ####################### TODO: Your Task 1 code ends Here #######################
+        ####################### TODO: Your Task 1 code ends Here #######################
 
-    #     return pos_x, pos_y, vel, yaw # note that yaw is in radian
+        return pos_x, pos_y, vel, yaw # note that yaw is in radian
+
     def stop(self):
         newAckermannCmd = AckermannDrive()
         newAckermannCmd.speed = 0
