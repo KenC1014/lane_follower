@@ -191,6 +191,7 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 		# 	wps_right = wps_right[indice: indice + num_effect_wps]
 		# 	waypoints = waypoints[indice: indice + num_effect_wps]
 
+		# Waypoints stablization
 		if prev_wps is not None and len(prev_wps) > 0:
 			prev_wps_x = prev_wps[:,0]
 			waypoints_x = waypoints[:,0]
