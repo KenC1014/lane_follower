@@ -15,7 +15,7 @@ def calculate_slope(p1, p2):
 		return 100
 	return (y2 - y1) / (x2 - x1)
 
-def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right_end=None, turn="front"):
+def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right_end=None, prev_wps=None, turn="front"):
 	"""
 	Find and fit lane lines
 	"""
@@ -117,7 +117,8 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 		right_fit = np.polyfit(righty, rightx, deg=2)
 
 		start_pos = height - 50
-		end_pos = max(min(lefty), min(righty))
+		# end_pos = max(min(lefty), min(righty))
+		end_pos = 0.42 * height
 		num_wps = 5
 
 		if turn != "front":
@@ -188,6 +189,14 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 			wps_left = wps_left[indice: indice + num_effect_wps]
 			wps_right = wps_right[indice: indice + num_effect_wps]
 			waypoints = waypoints[indice: indice + num_effect_wps]
+
+		if prev_wps is not None and len(prev_wps) > 0:
+			prev_wps_x = prev_wps[:,0]
+			waypoints_x = waypoints[:,0]
+			for i in range(len(waypoints)):
+				diff = abs(prev_wps_x[i] - waypoints_x[i])
+				if diff < 6:
+					waypoints[i] = prev_wps[i]
 
 		# if len(waypoints) < 5:
 		# 	print("warning, waypoints less than 5")
