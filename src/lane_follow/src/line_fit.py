@@ -193,7 +193,8 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 		if prev_wps is not None and len(prev_wps) > 0:
 			prev_wps_x = prev_wps[:,0]
 			waypoints_x = waypoints[:,0]
-			for i in range(len(waypoints)):
+			length = min(len(waypoints_x), len(prev_wps_x))
+			for i in range(length):
 				diff = abs(prev_wps_x[i] - waypoints_x[i])
 				if i == 0:
 					if diff < 8:
