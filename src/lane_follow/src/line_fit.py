@@ -195,8 +195,12 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 			waypoints_x = waypoints[:,0]
 			for i in range(len(waypoints)):
 				diff = abs(prev_wps_x[i] - waypoints_x[i])
-				if diff < 6:
-					waypoints[i] = prev_wps[i]
+				if i == 0:
+					if diff < 8:
+						waypoints[i] = prev_wps[i]
+				else:
+					if diff < 5:
+						waypoints[i] = prev_wps[i]
 
 		# if len(waypoints) < 5:
 		# 	print("warning, waypoints less than 5")
