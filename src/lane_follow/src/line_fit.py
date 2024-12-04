@@ -121,8 +121,8 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 		end_pos = 0.42 * height
 		num_wps = 5
 
-		if turn != "front":
-			num_wps = 15
+		# if turn != "front":
+		# 	num_wps = 15
 
 		wps_left_y = np.linspace(start_pos, end_pos, num_wps).astype(int)
 		wps_right_y = np.linspace(start_pos, end_pos, num_wps).astype(int)
@@ -133,39 +133,39 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 		x_right_poly = np.poly1d(right_fit)
 		wps_right_x = x_right_poly(wps_right_y).astype(int)
 
-		# Interpolate if abnomality occurs
-		x_shift = 300
-		y_shift = 400
-		min_dis = 50
+		# # Interpolate if abnomality occurs
+		# x_shift = 300
+		# y_shift = 400
+		# min_dis = 50
 
-		if abs(wps_right_x[0] - wps_left_x[0]) < min_dis:
-			wps_right_x = wps_right_x + x_shift
-			wps_left_x = wps_left_x + x_shift
+		# if abs(wps_right_x[0] - wps_left_x[0]) < min_dis:
+		# 	wps_right_x = wps_right_x + x_shift
+		# 	wps_left_x = wps_left_x + x_shift
 
-		# Define sharp turn
-		turn = "front"
-		# When a sharp left turn is detected
-		left_thresh = 0.6
-		p1 = (wps_right_x[0], wps_right_y[0])
-		p2 = (wps_right_x[len(wps_right_x) - 1], wps_right_y[len(wps_right_y) - 1])
-		slope = calculate_slope(p1, p2)
+		# # Define sharp turn
+		# turn = "front"
+		# # When a sharp left turn is detected
+		# left_thresh = 0.6
+		# p1 = (wps_right_x[0], wps_right_y[0])
+		# p2 = (wps_right_x[len(wps_right_x) - 1], wps_right_y[len(wps_right_y) - 1])
+		# slope = calculate_slope(p1, p2)
 		
-		if slope < left_thresh and slope > 0:
-			# left lane too close or overthrow right lane
-			wps_left_x = wps_right_x - x_shift
-			wps_left_y = wps_right_y + y_shift
-			turn = "left"
+		# if slope < left_thresh and slope > 0:
+		# 	# left lane too close or overthrow right lane
+		# 	wps_left_x = wps_right_x - x_shift
+		# 	wps_left_y = wps_right_y + y_shift
+		# 	turn = "left"
 
-		# When a sharp right turn is detected
-		right_thresh = -0.6
-		p1 = (wps_left_x[0], wps_left_y[0])
-		p2 = (wps_left_x[len(wps_left_x) - 1], wps_left_y[len(wps_left_y) - 1])
-		slope = calculate_slope(p1, p2)
+		# # When a sharp right turn is detected
+		# right_thresh = -0.6
+		# p1 = (wps_left_x[0], wps_left_y[0])
+		# p2 = (wps_left_x[len(wps_left_x) - 1], wps_left_y[len(wps_left_y) - 1])
+		# slope = calculate_slope(p1, p2)
 		
-		if slope > right_thresh and slope < 0 :
-			wps_right_x = wps_left_x + x_shift
-			wps_right_y = wps_left_y - y_shift
-			turn = "right"
+		# if slope > right_thresh and slope < 0 :
+		# 	wps_right_x = wps_left_x + x_shift
+		# 	wps_right_y = wps_left_y - y_shift
+		# 	turn = "right"
 
 		# Stack x, y to get points
 		wps_left = np.stack((wps_left_x, wps_left_y), axis=1)
@@ -173,22 +173,23 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 		
 		waypoints = (wps_left + wps_right)//2
 
-		if len(waypoints) > 0:
-			indice = 0
-			for i in range(len(waypoints)):
-				w_x, _ = waypoints[i]
-				if w_x >= 0:
-					indice = i
-					break
+		# # Waypoinst enhancement
+		# if len(waypoints) > 0:
+		# 	indice = 0
+		# 	for i in range(len(waypoints)):
+		# 		w_x, _ = waypoints[i]
+		# 		if w_x >= 0:
+		# 			indice = i
+		# 			break
 			
-			num_effect_wps = num_wps
-			num_enhanced_wps = 9
-			if turn != "front" and len(waypoints) >= num_enhanced_wps:
-				num_effect_wps = num_enhanced_wps
+		# 	num_effect_wps = num_wps
+		# 	num_enhanced_wps = 9
+		# 	if turn != "front" and len(waypoints) >= num_enhanced_wps:
+		# 		num_effect_wps = num_enhanced_wps
 
-			wps_left = wps_left[indice: indice + num_effect_wps]
-			wps_right = wps_right[indice: indice + num_effect_wps]
-			waypoints = waypoints[indice: indice + num_effect_wps]
+		# 	wps_left = wps_left[indice: indice + num_effect_wps]
+		# 	wps_right = wps_right[indice: indice + num_effect_wps]
+		# 	waypoints = waypoints[indice: indice + num_effect_wps]
 
 		if prev_wps is not None and len(prev_wps) > 0:
 			prev_wps_x = prev_wps[:,0]
