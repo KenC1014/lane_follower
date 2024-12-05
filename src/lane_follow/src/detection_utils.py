@@ -69,13 +69,13 @@ def combinedBinaryImage(img):
 
         # Thesholds for simulation
         # min_thresh = 17
-        # max_thresh = 50
+        # max_thresh =15
 
         binaryImage = cv2.Canny(img, min_thresh, max_thresh)
         # cv2.imwrite("combine.jpg", binaryImage)
 
         # Remove noise from binary image
-        binaryImage = morphology.remove_small_objects(binaryImage.astype('bool'),min_size=10,connectivity=2)
+        binaryImage = morphology.remove_small_objects(binaryImage.astype('bool'),min_size=15,connectivity=2)
 
         return binaryImage
 
