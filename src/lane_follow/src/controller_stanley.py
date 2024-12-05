@@ -198,13 +198,13 @@ class Stanley(object):
             wp = new_wp
         else:
             wp = wp
-        print("wp:", wp)
+        # print("wp:", wp)
         # x2 = (wp[2][0]+wp[3][0])/2
         # y2 = (wp[2][1]+wp[3][1])/2
         # x1 = (wp[0][0]+wp[1][0])/2
         # y1 = (wp[0][1]+wp[1][1])/2
-        x2 = round((wp[3][0]+wp[3][0])/2,3)
-        y2 = round((wp[3][1]+wp[3][1])/2,3)
+        x2 = round((wp[3][0]+wp[4][0])/2,3)
+        y2 = round((wp[3][1]+wp[4][1])/2,3)
         x1 = round((wp[2][0]+wp[1][0])/2,3)
         y1 = round((wp[2][1]+wp[1][1])/2,3)
         heading = np.arctan2(y2-y1, x2-x1)
@@ -363,29 +363,29 @@ class Stanley(object):
             # print(theta_e)
             # print(ct_error)
             # print(filt_vel)
-            a_delta = np.arctan2(ct_error*0.4, filt_vel)
+            a_delta = np.arctan2(ct_error*0.2, filt_vel)
             a_delta_deg = round(np.degrees(a_delta), 1)
             f_delta        = round(theta_e + a_delta, 3)
             # f_delta        = round(theta_e + np.arctan2(ct_error*0.4, filt_vel), 3)
-            print("a_delta Error: " + str(round(a_delta_deg,3)) + ", Heading Error: " + str(theta_e_deg))
+            print("CT delta Error: " + str(round(a_delta_deg,3)) + ", Heading Error: " + str(theta_e_deg))
             print("delta: " + str(round(f_delta,3)) + ", vel: " + str(filt_vel))
 
-            print(f_delta_prev)
+            # print(f_delta_prev)
             f_delta        = round(np.clip(f_delta, -0.61, 0.61), 3)
-            print(f_delta)
+            # print(f_delta)
             f_delta = np.clip(f_delta, f_delta_prev-0.2, f_delta_prev+0.2)
-            print(f_delta)
-            # if np.isnan(f_delta):
-            #     f_delta_prev = 0
-            # else:
-            #     f_delta_prev = f_delta
+            # print(f_delta)
+            if np.isnan(f_delta):
+                f_delta_prev = 0
+            else:
+                f_delta_prev = f_delta
             # print(f_delta_prev)
 
 
             # if abs(f_delta) > abs(f_delta_prev) + 5
 
             f_delta_deg    = np.degrees(f_delta)
-            print(f_delta_deg)
+            # print(f_delta_deg)
             # print(f_delta_deg)
             steering_angle = -f_delta_deg
             # steering_angle = self.front2steer(-f_delta_deg)
