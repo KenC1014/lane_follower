@@ -46,6 +46,7 @@ class lanenet_detector():
         self.detected = False
         self.hist = True
         self.prev_wps = []
+        self.centerx_current = None
         self.turn = "front"
 
     def img_front_callback(self, data):
@@ -106,6 +107,7 @@ class lanenet_detector():
         left_end=None
         right_start=None
         right_end=None
+        centerx_current=self.centerx_current
         waypoints = []
         wps_left = []
         wps_right  = []
@@ -113,9 +115,10 @@ class lanenet_detector():
 
         if not self.hist:
             # Fit lane without previous result
-            ret = line_fit(img_birdeye, left_start, left_end, right_start, right_end, self.prev_wps, self.turn)
+            ret = line_fit(img_birdeye, left_start, left_end, right_start, right_end, self.prev_wps, centerx_current, self.turn)
             left_fit = ret['left_fit']
             right_fit = ret['right_fit']
+            centerx_current = ret['centerx_current']
             waypoints = ret['waypoints']
             wps_left = ret['wps_left']
             wps_right = ret['wps_right']
@@ -124,11 +127,12 @@ class lanenet_detector():
         else:
             # Fit lane with previous result
             if not self.detected:
-                ret = line_fit(img_birdeye, left_start, left_end, right_start, right_end, self.prev_wps, self.turn)
+                ret = line_fit(img_birdeye, left_start, left_end, right_start, right_end, self.prev_wps, centerx_current, self.turn)
 
                 if ret is not None:
                     left_fit = ret['left_fit']
                     right_fit = ret['right_fit']
+                    centerx_current = ret['centerx_current']
                     waypoints = ret['waypoints']
                     wps_left = ret['wps_left']
                     wps_right = ret['wps_right']
@@ -139,6 +143,9 @@ class lanenet_detector():
 
                     # Update previous waypoints
                     self.prev_wps = waypoints
+
+                    # Update center
+                    self.centerx_current = centerx_current
 
                     self.detected = True
 
@@ -150,6 +157,7 @@ class lanenet_detector():
                 if ret is not None:
                     left_fit = ret['left_fit']
                     right_fit = ret['right_fit']
+                    centerx_current = ret['centerx_current']
                     waypoints = ret['waypoints']
                     wps_left = ret['wps_left']
                     wps_right = ret['wps_right']
@@ -160,6 +168,9 @@ class lanenet_detector():
 
                     # Update previous waypoints
                     self.prev_wps = waypoints
+
+                    # Update center
+                    self.centerx_current = centerx_current
 
                 else:
                     self.detected = False

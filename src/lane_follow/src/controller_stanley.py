@@ -193,16 +193,20 @@ class Stanley(object):
 
     def waypoint_callback(self, data):
        
-        wp = waypoints_callback_helper(data) / 10000
-        print(wp)
+        new_wp = waypoints_callback_helper(data) / 10000
+        if len(new_wp) > 1:
+            wp = new_wp
+        else:
+            wp = wp
+        print("wp:", wp)
         # x2 = (wp[2][0]+wp[3][0])/2
         # y2 = (wp[2][1]+wp[3][1])/2
         # x1 = (wp[0][0]+wp[1][0])/2
         # y1 = (wp[0][1]+wp[1][1])/2
-        x2 = round((wp[3][0]+wp[4][0])/2,3)
-        y2 = round((wp[3][1]+wp[4][1])/2,3)
-        x1 = round((wp[2][0]+wp[3][0])/2,3)
-        y1 = round((wp[2][1]+wp[3][1])/2,3)
+        x2 = round((wp[3][0]+wp[3][0])/2,3)
+        y2 = round((wp[3][1]+wp[3][1])/2,3)
+        x1 = round((wp[2][0]+wp[1][0])/2,3)
+        y1 = round((wp[2][1]+wp[1][1])/2,3)
         heading = np.arctan2(y2-y1, x2-x1)
         self.waypoint_x1 = x1
         self.waypoint_y1 = y1
@@ -249,7 +253,7 @@ class Stanley(object):
 
     # Start Stanley controller
     def start_stanley(self):
-        
+        f_delta_prev = 0
         while not rospy.is_shutdown():
 
             # if (self.gem_enable == False):
@@ -303,8 +307,8 @@ class Stanley(object):
             y2 = self.waypoint_y2
 
             print(x1, y1)
-            print(self.waypoint_x2, self.waypoint_y2, self.waypoint_heading)
-            print(curr_x, curr_y, current_yaw)
+            print(x2, y2, self.waypoint_heading)
+            # print(curr_x, curr_y, current_yaw)
             # vec_target_2_front = np.array([[curr_x-self.waypoint_x],[curr_y-self.waypoint_y]])
             # front_axle_vec_rot_90 = np.array([[np.cos(current_yaw - np.pi / 2.0)], [np.sin(current_yaw - np.pi / 2.0)]])
 
@@ -321,7 +325,7 @@ class Stanley(object):
             ct_error = float(ct_error)
 
             # heading error
-            print(self.waypoint_heading-current_yaw)
+            # print(self.waypoint_heading-current_yaw)
             theta_e = self.pi_2_pi(self.waypoint_heading-current_yaw) 
 
             # theta_e = self.target_path_points_yaw[target_point_idx]-curr_yaw 
@@ -356,20 +360,35 @@ class Stanley(object):
                 throttle_percent = 0.37
 
             # -------------------------------------- Stanley controller --------------------------------------
-            print(theta_e)
-            print(ct_error)
-            print(filt_vel)
-            f_delta        = round(theta_e + np.arctan2(ct_error*4, filt_vel), 3)
+            # print(theta_e)
+            # print(ct_error)
+            # print(filt_vel)
+            a_delta = np.arctan2(ct_error*0.4, filt_vel)
+            a_delta_deg = round(np.degrees(a_delta), 1)
+            f_delta        = round(theta_e + a_delta, 3)
             # f_delta        = round(theta_e + np.arctan2(ct_error*0.4, filt_vel), 3)
-            print("Crosstrack Error: " + str(round(ct_error*4,3)) + ", Heading Error: " + str(theta_e_deg))
+            print("a_delta Error: " + str(round(a_delta_deg,3)) + ", Heading Error: " + str(theta_e_deg))
             print("delta: " + str(round(f_delta,3)) + ", vel: " + str(filt_vel))
 
+            print(f_delta_prev)
             f_delta        = round(np.clip(f_delta, -0.61, 0.61), 3)
+            print(f_delta)
+            f_delta = np.clip(f_delta, f_delta_prev-0.2, f_delta_prev+0.2)
+            print(f_delta)
+            # if np.isnan(f_delta):
+            #     f_delta_prev = 0
+            # else:
+            #     f_delta_prev = f_delta
+            # print(f_delta_prev)
+
+
+            # if abs(f_delta) > abs(f_delta_prev) + 5
+
             f_delta_deg    = np.degrees(f_delta)
             print(f_delta_deg)
             # print(f_delta_deg)
             steering_angle = -f_delta_deg
-            # steering_angle = self.front2steer(f_delta_deg)
+            # steering_angle = self.front2steer(-f_delta_deg)
 
             if (filt_vel < 0.2):
                 self.ackermann_msg.acceleration   = throttle_percent
@@ -379,8 +398,10 @@ class Stanley(object):
                 self.ackermann_msg.acceleration   = throttle_percent
                 self.ackermann_msg.steering_angle = round(steering_angle,1)
                 print("Steering angle: " + str(self.ackermann_msg.steering_angle))
-            # print(self.ackermann_msg.acceleration)
-            # self.ackermann_msg.steering_angle = -10
+            # print("YYYYYYYYY Steering angle: " + str(self.ackermann_msg.steering_angle))
+            # self.ackermann_msg.steering_angle = 10
+            # if self.ackermann_msg.steering_angle > 0:
+            #     print(")
             
             # ------------------------------------------------------------------------------------------------ 
 

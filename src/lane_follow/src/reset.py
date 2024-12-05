@@ -62,9 +62,9 @@ if __name__ == "__main__":
     # yaw_default = 0
 
     # Reset normal pos
-    x_default = -50
+    x_default = -40
     y_default = 0
-    yaw_default = 0.2
+    yaw_default = 0.1
     
     parser.add_argument('--x', type = float, help = 'x position of the vehicle.', default = x_default)
     parser.add_argument('--y', type = float, help = 'y position of the vehicle.', default = y_default)

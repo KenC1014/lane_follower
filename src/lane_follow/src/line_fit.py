@@ -15,7 +15,7 @@ def calculate_slope(p1, p2):
 		return 100
 	return (y2 - y1) / (x2 - x1)
 
-def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right_end=None, prev_wps=None, turn="front"):
+def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right_end=None, prev_wps=None, centerx_current=None, turn="front"):
 	"""
 	Find and fit lane lines
 	"""
@@ -28,8 +28,10 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 	out_img = (np.dstack((binary_warped, binary_warped, binary_warped))*255).astype('uint8')
 	# Find the peak of the left and right halves of the histogram
 	# These will be the starting point for the left and right lines
-	
+
 	midpoint = int(width/2)
+	if centerx_current is not None:
+		midpoint = centerx_current
 	if left_end == None:
 		left_end = midpoint
 	if right_start == None:
@@ -72,8 +74,9 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 		window_y_bottom = height - window_height * window
 		# Draw the windows on the visualization image using cv2.rectangle()
 		##TO DO
-		cv2.rectangle(out_img, (window_x_left_min, window_y_top), (window_x_right_max, window_y_bottom),
-					  (0, 255, 0), 2)
+		# rect = cv2.rectangle(out_img, (window_x_left_min, window_y_top), (window_x_right_max, window_y_bottom),
+		# 			  (0, 255, 0), 2)
+		# cv2.imwrite("rect.jpg", rect)
 		####
 		# Identify the nonzero pixels in x and y within the window
 		##TO DO
@@ -87,6 +90,15 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 		##TO DO
 		left_lane_inds.append(window_nonzero_left)
 		right_lane_inds.append(window_nonzero_right)
+
+		# Current Center
+		if window == 15:
+			if centerx_current is None:
+				centerx_current = (leftx_current + rightx_current)//2
+			else:
+				diff = abs(centerx_current - (leftx_current + rightx_current)//2)
+				if diff > 10:
+					centerx_current = (leftx_current + rightx_current)//2
 
 		####
 		# If you found > minpix pixels, recenter next window on their mean position
@@ -118,7 +130,7 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 
 		start_pos = height - 80
 		# end_pos = max(min(lefty), min(righty))
-		end_pos = 0.4 * height
+		end_pos = 0.2 * height
 		num_wps = 5
 
 		# if turn != "front":
@@ -191,26 +203,26 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 		# 	wps_right = wps_right[indice: indice + num_effect_wps]
 		# 	waypoints = waypoints[indice: indice + num_effect_wps]
 
-		# Waypoints stablization
-		if prev_wps is not None and len(prev_wps) > 0:
-			prev_wps_x = prev_wps[:,0]
-			waypoints_x = waypoints[:,0]
+		# # Waypoints stablization
+		# if prev_wps is not None and len(prev_wps) > 0:
+		# 	prev_wps_x = prev_wps[:,0]
+		# 	waypoints_x = waypoints[:,0]
 
-			# Average based stablizer
-			# diff = np.sum(abs(prev_wps_x - waypoints_x))
-			# if diff < 20:
-			# 	waypoints = prev_wps
+		# 	# Average based stablizer
+		# 	# diff = np.sum(abs(prev_wps_x - waypoints_x))
+		# 	# if diff < 20:
+		# 	# 	waypoints = prev_wps
 
-			# Point wise based stablizer
-			length = min(len(waypoints_x), len(prev_wps_x))
-			for i in range(length):
-				diff = abs(prev_wps_x[i] - waypoints_x[i])
-				if i == 0:
-					if diff < 9:
-						waypoints[i] = prev_wps[i]
-				else:
-					if diff < 5:
-						waypoints[i] = prev_wps[i]
+		# 	# Point wise based stablizer
+		# 	length = min(len(waypoints_x), len(prev_wps_x))
+		# 	for i in range(length):
+		# 		diff = abs(prev_wps_x[i] - waypoints_x[i])
+		# 		if i == 0:
+		# 			if diff < 3:
+		# 				waypoints[i] = prev_wps[i]
+		# 		else:
+		# 			if diff < 3:
+		# 				waypoints[i] = prev_wps[i]
 
 		# if len(waypoints) < 5:
 		# 	print("warning, waypoints less than 5")
@@ -231,6 +243,7 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 	ret['out_img'] = out_img
 	ret['left_lane_inds'] = left_lane_inds
 	ret['right_lane_inds'] = right_lane_inds
+	ret['centerx_current'] = centerx_current
 	ret['waypoints'] = waypoints
 	ret['wps_left'] = wps_left
 	ret['wps_right'] = wps_right
@@ -325,6 +338,7 @@ def bird_fit(binary_warped, ret, mode="front", save_file=None):
 	# Grab variables from ret dictionary
 	left_fit = ret['left_fit']
 	right_fit = ret['right_fit']
+	centerx_current = ret['centerx_current']
 	nonzerox = ret['nonzerox']
 	nonzeroy = ret['nonzeroy']
 	left_lane_inds = ret['left_lane_inds']
@@ -401,6 +415,12 @@ def bird_fit(binary_warped, ret, mode="front", save_file=None):
 		cv2.circle(result, (c_x, c_y), 15, (255, 255, 255), -1)
 		cv2.line(result, (pc_x, pc_y), (c_x, c_y), (0, 255, 0), 9)
 		prev_c = c
+
+	# Draw center
+	h = binary_warped.shape[0]
+	start_div = (centerx_current, 0)
+	end_div = (centerx_current, h)
+	cv2.line(result, start_div, end_div, (0, 255, 255), 2)
 
 	plt.imshow(result)
 	plt.plot(left_fitx, ploty, color='yellow')

@@ -43,8 +43,8 @@ def color_thresh(img):
         img = cv2.GaussianBlur(img, ksize=(ksize, ksize), sigmaX=sigma)
         h, l, s = cv2.split(img)
         binary_output = np.zeros_like(s).astype(np.uint8)
-        binary_output[((s <= 10) | ((s >= 200) & (s <= 255)))
-                      & ((h == 0) | (h <= 45) | (h >= 120))
+        binary_output[((s <= 10) | ((s >= 195) & (s <= 255)))
+                      & ((h == 0) | (h <= 105) | (h >= 120))
                       & ((l >= 50) & (l <= 255))
                       ] = 1
         # cv2.imwrite("test_colorfilter.jpg", binary_output * 255)
