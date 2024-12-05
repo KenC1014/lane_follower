@@ -107,7 +107,7 @@ class lanenet_detector():
         left_end=None
         right_start=None
         right_end=None
-        centerx_current = None
+        centerx_current=self.centerx_current
         waypoints = []
         wps_left = []
         wps_right  = []

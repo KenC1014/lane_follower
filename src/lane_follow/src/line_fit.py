@@ -93,7 +93,12 @@ def line_fit(binary_warped, left_start=0, left_end=None, right_start=None, right
 
 		# Current Center
 		if window == 0:
-			centerx_current = (leftx_current + rightx_current)//2
+			if centerx_current is None:
+				centerx_current = (leftx_current + rightx_current)//2
+			else:
+				diff = abs(centerx_current - (leftx_current + rightx_current)//2)
+				if diff > 10:
+					centerx_current = (leftx_current + rightx_current)//2
 
 		####
 		# If you found > minpix pixels, recenter next window on their mean position
