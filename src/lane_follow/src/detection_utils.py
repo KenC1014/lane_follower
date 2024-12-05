@@ -29,7 +29,6 @@ def gradient_thresh(img):
         # cv2.imwrite("post_gradient.jpg", binary_output * 255)
         return binary_output
 
-
 def color_thresh(img):
         """
         Convert RGB to HSL and threshold to binary image using S channel
@@ -39,18 +38,20 @@ def color_thresh(img):
         #Hint: threshold on H to remove green grass
         ## TODO
         img = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
+        sigma = 1
+        ksize = 7
+        img = cv2.GaussianBlur(img, ksize=(ksize, ksize), sigmaX=sigma)
         h, l, s = cv2.split(img)
-        min_s, max_s = (100, 255)
         binary_output = np.zeros_like(s).astype(np.uint8)
-        binary_output[(min_s <= s) & (s <= max_s)] = 1
-        min_h, max_h = (15, 85)
-        mask_h = np.zeros_like(h).astype(np.uint8)
-        mask_h[(min_h <= h) & (h <= max_h)] = 1
-        binary_output[mask_h == 1] = 0
+        binary_output[((s <= 10) | ((s >= 200) & (s <= 255)))
+                      & ((h == 0) | (h <= 45) | (h >= 120))
+                      & ((l >= 50) & (l <= 255))
+                      ] = 1
+        # cv2.imwrite("test_colorfilter.jpg", binary_output * 255)
         ####
 
-        # cv2.imwrite("post_color.jpg", binary_output * 255)
         return binary_output
+
 
 
 def combinedBinaryImage(img):
@@ -71,7 +72,8 @@ def combinedBinaryImage(img):
         # min_thresh = 17
         # max_thresh = 50
 
-        binaryImage = cv2.Canny(img, min_thresh, max_thresh)
+        binaryImage = color_thresh(img)
+        # binaryImage = cv2.Canny(img, min_thresh, max_thresh)
         # cv2.imwrite("combine.jpg", binaryImage)
 
         # Remove noise from binary image
@@ -110,8 +112,10 @@ def perspective_transform(img, mode="front", verbose=False):
         x_bl = 2
         x_br = 615
         y_b = 405
-        x_l_trans = x_bl
-        x_r_trans = x_br
+        x_l_trans = w/3
+        x_r_trans = w*2/3
+        # x_l_trans = x_bl
+        # x_r_trans = x_br
         y_t_trans = 0
         y_b_trans = 405
 

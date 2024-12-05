@@ -193,12 +193,16 @@ class Stanley(object):
 
     def waypoint_callback(self, data):
        
-        wp = waypoints_callback_helper(data)
+        wp = waypoints_callback_helper(data) / 10000
         print(wp)
-        x2 = wp[2][0]
-        y2 = wp[2][1]
-        x1 = wp[0][0]
-        y1 = wp[0][1]
+        # x2 = (wp[2][0]+wp[3][0])/2
+        # y2 = (wp[2][1]+wp[3][1])/2
+        # x1 = (wp[0][0]+wp[1][0])/2
+        # y1 = (wp[0][1]+wp[1][1])/2
+        x2 = round((wp[3][0]+wp[4][0])/2,3)
+        y2 = round((wp[3][1]+wp[4][1])/2,3)
+        x1 = round((wp[2][0]+wp[3][0])/2,3)
+        y1 = round((wp[2][1]+wp[3][1])/2,3)
         heading = np.arctan2(y2-y1, x2-x1)
         self.waypoint_x1 = x1
         self.waypoint_y1 = y1
@@ -290,8 +294,8 @@ class Stanley(object):
             # curr_y = 712
             
             # SIM
-            curr_x = 320
-            curr_y = 480
+            curr_x = 320 / 10000
+            curr_y = 480 / 10000
 
             x1 = self.waypoint_x1
             y1 = self.waypoint_y1
@@ -322,7 +326,7 @@ class Stanley(object):
 
             # theta_e = self.target_path_points_yaw[target_point_idx]-curr_yaw 
             theta_e_deg = round(np.degrees(theta_e), 1)
-            print("Crosstrack Error: " + str(round(ct_error,3)) + ", Heading Error: " + str(theta_e_deg))
+            # print("Crosstrack Error: " + str(round(ct_error,3)) + ", Heading Error: " + str(theta_e_deg))
 
             # --------------------------- Longitudinal control using PD controller ---------------------------
             
@@ -355,12 +359,16 @@ class Stanley(object):
             print(theta_e)
             print(ct_error)
             print(filt_vel)
-            f_delta        = round(theta_e + np.arctan2(ct_error*0.4, filt_vel), 3)
+            f_delta        = round(theta_e + np.arctan2(ct_error*4, filt_vel), 3)
+            # f_delta        = round(theta_e + np.arctan2(ct_error*0.4, filt_vel), 3)
+            print("Crosstrack Error: " + str(round(ct_error*4,3)) + ", Heading Error: " + str(theta_e_deg))
+            print("delta: " + str(round(f_delta,3)) + ", vel: " + str(filt_vel))
+
             f_delta        = round(np.clip(f_delta, -0.61, 0.61), 3)
             f_delta_deg    = np.degrees(f_delta)
-            print(f_delta)
+            print(f_delta_deg)
             # print(f_delta_deg)
-            steering_angle = f_delta_deg
+            steering_angle = -f_delta_deg
             # steering_angle = self.front2steer(f_delta_deg)
 
             if (filt_vel < 0.2):
@@ -372,6 +380,7 @@ class Stanley(object):
                 self.ackermann_msg.steering_angle = round(steering_angle,1)
                 print("Steering angle: " + str(self.ackermann_msg.steering_angle))
             # print(self.ackermann_msg.acceleration)
+            # self.ackermann_msg.steering_angle = -10
             
             # ------------------------------------------------------------------------------------------------ 
 
@@ -384,10 +393,10 @@ class Stanley(object):
 
             # SIM
 
-            if (steering_angle > 0.5):
+            if (abs(steering_angle) > 10):
                 self.ackermann_msg.speed = 2
             else:
-                self.ackermann_msg.speed = 4
+                self.ackermann_msg.speed = 2
 
             self.stanley_pub.publish(self.ackermann_msg)
 
