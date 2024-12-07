@@ -486,3 +486,63 @@ def final_viz(undist, m_inv, waypoints, wps_left, wps_right, turn):
 
 
 	return result
+
+
+def control_viz(img, controls):
+	"""
+	Control visualized and overlayed on top of birdseye image
+	"""
+
+	img = img.astype(np.uint8)
+	h, w, _ = img.shape
+
+	# Create an image to draw the lines on
+	control_image = np.zeros((h, w, 3), dtype='uint8')  # NOTE: Hard-coded image dimensions
+
+	# Draw the lane onto the warped blank image
+	ct_error, theta_e, steering_angle, brake, throttle_percent, x1, y1, x2, y2 = controls
+
+	cv2.line(control_image, (int(w/2), h), (int(w/2), int(h/2)), (0, 165, 255), 4)
+	cv2.line(control_image, (x1, y1), (x2, y2), (255, 0, 255), 4)
+	cv2.line(control_image, (x1, y1), (x1 + ct_error, y1), (255, 0, 255), 4)
+	cv2.line(control_image, (int(w/2), int(h-50)), (int(w/2) + steering_angle*5, int(h-50)), (255, 0, 0), 4)
+
+	
+	
+	# prev_c = waypoints[0]
+	# for c in waypoints:
+	# 	pc_x, pc_y = prev_c
+	# 	c_x, c_y = c
+	# 	cv2.circle(color_warp, (c_x, c_y), 20, (0, 0, 255), -1)
+	# 	cv2.line(color_warp, (pc_x, pc_y), (c_x, c_y), (255, 0, 0), 9)
+	# 	prev_c = c
+
+	# for c in wps_left:
+	# 	pc_x, pc_y = prev_c
+	# 	c_x, c_y = c
+	# 	cv2.circle(color_warp, (c_x, c_y), 20, (0, 255, 255), -1)
+
+	# for c in wps_right:
+	# 	pc_x, pc_y = prev_c
+	# 	c_x, c_y = c
+	# 	cv2.circle(color_warp, (c_x, c_y), 20, (0, 255, 0), -1)
+
+	# Warp the blank back to original image space using inverse perspective matrix (Minv)
+	# newwarp = cv2.warpPerspective(color_warp, m_inv, (undist.shape[1], undist.shape[0]))
+	# Combine the result with the original image
+	# Convert arrays to 8 bit for later cv to ros image transfer
+	img = np.array(img, dtype=np.uint8)
+	control_image = np.array(control_image, dtype=np.uint8)
+	result = cv2.addWeighted(img, 1, control_image, 1, 0)
+
+	# Caption
+	# font = cv2.FONT_HERSHEY_SIMPLEX
+	# if turn == "left":
+	# 	cv2.putText(result,'Sharp Left Turn',(900,70), font, 1, (0,255,255),2,cv2.LINE_AA)
+	# elif turn == "right":
+	# 	cv2.putText(result,'Sharp Right Turn',(900,70), font, 1, (0,255,255),2,cv2.LINE_AA)
+	# else:
+	# 	cv2.putText(result,'Normal',(1100,70), font, 1, (0,255,255),2,cv2.LINE_AA)
+
+
+	return result

@@ -5,7 +5,8 @@ from std_msgs.msg import Int16MultiArray, MultiArrayDimension
 from cv_bridge import CvBridge
 from Line import Line
 from detection_utils import combinedBinaryImage, perspective_transform
-from line_fit import line_fit, tune_fit, bird_fit, final_viz
+from line_fit import line_fit, tune_fit, bird_fit, final_viz, control_viz
+import numpy as np
 
 
 class lanenet_detector():
@@ -14,9 +15,11 @@ class lanenet_detector():
 
         # Subscribers
         # Uncomment this line for lane detection of GEM car in Gazebo
-        self.sub_image = rospy.Subscriber('/front_single_camera/image_raw', Image, self.img_front_callback, queue_size=1)
+        # self.sub_image = rospy.Subscriber('/front_single_camera/image_raw', Image, self.img_front_callback, queue_size=1)
         # Front camera topic
-        # self.sub_image = rospy.Subscriber('/zed2/zed_node/rgb/image_rect_color', Image, self.img_front_callback, queue_size=1)
+        self.sub_image = rospy.Subscriber('/zed2/zed_node/rgb/image_rect_color', Image, self.img_front_callback, queue_size=1)
+        # E4
+        # self.sub_image = rospy.Subscriber('/oak/rgb/image_raw', Image, self.img_front_callback, queue_size=1)
         # Left side camera topic
         # self.left_image = rospy.Subscriber('/camera_fl/arena_camera_node/image_raw', Image, self.img_left_callback, queue_size=1)
         # Right side camera topic
@@ -25,6 +28,10 @@ class lanenet_detector():
         # self.gnss_imu = rospy.Subscriber('/septentrio_gnss/imu', Imu, self.gnss_imu_callback, queue_size=1)
         # GNSS Nav topic
         # self.gnss_nav = rospy.Subscriber('/septentrio_gnss/navsatfix', NavSatFix, self.gnss_nav_callback, queue_size=1)
+
+        self.sub_control = rospy.Subscriber('control', Int16MultiArray, self.control_callback, queue_size=1)
+
+
 
         # Publishers
         # front detection topic
@@ -48,6 +55,7 @@ class lanenet_detector():
         self.prev_wps = []
         self.centerx_current = None
         self.turn = "front"
+        self.control = []
 
     def img_front_callback(self, data):
         raw_img = img_callback_helper(data)
@@ -97,7 +105,9 @@ class lanenet_detector():
 
     def gnss_nav_callback(self, data):
         gnss_nav_callback_helper(data)
-
+    
+    def control_callback(self, data):
+        self.control = np.array(data.data)
 
     def detection(self, img, mode="front"):
         binary_img = combinedBinaryImage(img)
@@ -183,6 +193,8 @@ class lanenet_detector():
             combine_fit_img = None
             if ret is not None:
                 bird_fit_img = bird_fit(img_birdeye, ret, mode, save_file=None)
+                if len(self.control) > 0:
+                    bird_fit_img = control_viz(bird_fit_img, self.control)
                 combine_fit_img = final_viz(img, Minv, waypoints, wps_left, wps_right, self.turn)
             else:
                 print("Unable to detect lanes")

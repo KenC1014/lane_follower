@@ -72,8 +72,8 @@ def combinedBinaryImage(img):
         # min_thresh = 17
         # max_thresh = 50
 
-        binaryImage = color_thresh(img)
-        # binaryImage = cv2.Canny(img, min_thresh, max_thresh)
+        # binaryImage = color_thresh(img)
+        binaryImage = cv2.Canny(img, min_thresh, max_thresh)
         # cv2.imwrite("combine.jpg", binaryImage)
 
         # Remove noise from binary image
@@ -94,30 +94,30 @@ def perspective_transform(img, mode="front", verbose=False):
         h, w = img.shape
 
         # Transform for real time
-        # x_tl = 640 + (552 - 690) // 2
-        # x_tr = w - x_tl
-        # y_t = 403
-        # x_bl = 640 + (314 - 995) // 2
-        # x_br = w - x_bl
-        # y_b = h
-        # x_l_trans = x_bl
-        # x_r_trans = x_br
-        # y_t_trans = 0
-        # y_b_trans = h
+        x_tl = 640 + (552 - 690) // 2
+        x_tr = w - x_tl
+        y_t = 403
+        x_bl = 640 + (314 - 995) // 2
+        x_br = w - x_bl
+        y_b = h
+        x_l_trans = x_bl
+        x_r_trans = x_br
+        y_t_trans = 0
+        y_b_trans = h
 
         # Transform for GEM simulation
-        x_tl = 280
-        x_tr = 358
-        y_t = 260
-        x_bl = 2
-        x_br = 615
-        y_b = 405
-        x_l_trans = w/3
-        x_r_trans = w*2/3
-        # x_l_trans = x_bl
-        # x_r_trans = x_br
-        y_t_trans = 0
-        y_b_trans = 405
+        # x_tl = 280
+        # x_tr = 358
+        # y_t = 260
+        # x_bl = 2
+        # x_br = 615
+        # y_b = 405
+        # x_l_trans = w/3
+        # x_r_trans = w*2/3
+        # # x_l_trans = x_bl
+        # # x_r_trans = x_br
+        # y_t_trans = 0
+        # y_b_trans = 405
 
         # # left camera view
         # if mode == "left":
