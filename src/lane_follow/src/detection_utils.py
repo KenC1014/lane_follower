@@ -57,7 +57,7 @@ def combinedBinaryImage(img):
     # Remove noise from binary image
     binaryImage = morphology.remove_small_objects(binaryImage.astype('bool'),min_size=100,connectivity=2)
 
-    cv2.imwrite("color_mask.jpg", np.hstack((color_mask, binaryImage)) * 255)
+    # cv2.imwrite("color_mask.jpg", np.hstack((color_mask, binaryImage)) * 255)
 
     return binaryImage
 
@@ -289,34 +289,34 @@ def get_three_view_birdeye_trans_first(front_image, left_image, right_image, out
     shrink = int(2 / scale)
 
     warped_left, M_left, Minv_left = warp_image(left_image, output_h, output_w, scale, mode=model+"left")
-    cv2.imwrite("warped_left.jpg", warped_left)
+    # cv2.imwrite("warped_left.jpg", warped_left)
     mask_left = get_warped_mask(left_image, output_h, output_w, shrink, scale, mode=model+"left")
     mask_left[:, (mask_left.shape[1] // 2):] = 0
     edges_left = combinedBinaryImage(warped_left)
     edges_left = np.where(mask_left == 1, edges_left, 0)
-    cv2.imwrite("warped_left_edges.jpg", edges_left * 255)
+    # cv2.imwrite("warped_left_edges.jpg", edges_left * 255)
 
     warped_right, M_right, Minv_right = warp_image(right_image, output_h, output_w, scale, mode=model+"right")
-    cv2.imwrite("warped_right.jpg", warped_right)
+    # cv2.imwrite("warped_right.jpg", warped_right)
     mask_right = get_warped_mask(right_image, output_h, output_w, shrink, scale, mode=model + "right")
     mask_right[:, :(mask_right.shape[1] // 2)] = 0
     edges_right = combinedBinaryImage(warped_right)
     edges_right= np.where(mask_right == 1, edges_right, 0)
-    cv2.imwrite("warped_right_edges.jpg", edges_right * 255)
+    # cv2.imwrite("warped_right_edges.jpg", edges_right * 255)
 
     front_image = cv2.GaussianBlur(front_image,(5, 5), 0)
     warped_front, M_front, Minv_front = warp_image(front_image, output_h, output_w, scale, mode=model+"front")
-    cv2.imwrite("warped_front.jpg", warped_front)
+    # cv2.imwrite("warped_front.jpg", warped_front)
     mask_front = get_warped_mask(front_image, output_h, output_w, shrink, scale, mode=model + "front")
     edges_front = combinedBinaryImage(warped_front)
     edges_front= np.where(mask_front == 1, edges_front, 0)
-    cv2.imwrite("warped_front_edges.jpg", edges_front * 255)
+    # cv2.imwrite("warped_front_edges.jpg", edges_front * 255)
     mask_h, mask_w = mask_front.shape[:2]
     mask_front[:,int(mask_w * 5 / 12 ):int(mask_w * 7 / 12 )] = 1   # cut the tire edges
 
     edges_image = edges_left + edges_right
     warped_edges = np.where(mask_front == 0, edges_image, edges_front)
-    cv2.imwrite("warped_edges.jpg", warped_edges * 255)
+    # cv2.imwrite("warped_edges.jpg", warped_edges * 255)
 
     return warped_edges, M_front, Minv_front
 

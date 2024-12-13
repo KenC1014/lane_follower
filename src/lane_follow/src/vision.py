@@ -211,7 +211,7 @@ class lanenet_detector():
         img_birdeye, M, Minv = get_three_view_birdeye_trans_first(img, left_image, right_image,
                                                                  output_h=output_h, output_w=output_w, 
                                                                  scale=scale, model=self.model)
-        print("birdeye shape", img_birdeye.shape)
+        # print("birdeye shape", img_birdeye.shape)
         # cv2.imwrite(f'src/lane_follow/src/record/three_view_bird_binary_{self.timestamp}.jpg', img_birdeye * 255)
 
         three_view_forward_image = None
@@ -221,7 +221,7 @@ class lanenet_detector():
         front_h, front_w = front_image.shape[:2]
         out_size = (int(front_h * 1.5), int(front_w * 1.5))
         three_view_forward_image = get_three_view_forward(three_view_birdeye, front_h, front_w, Minv, out_size=out_size)
-        print("forward shape", three_view_forward_image.shape)
+        # print("forward shape", three_view_forward_image.shape)
         # cv2.imwrite(f'src/lane_follow/src/record/three_view_birdeye_{self.timestamp}.jpg', three_view_birdeye)
         # cv2.imwrite('src/lane_follow/src/three_view_forward.jpg', three_view_forward_image)
 
