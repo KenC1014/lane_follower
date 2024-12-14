@@ -82,18 +82,6 @@ class lanenet_detector():
                 self.sub_image = rospy.Subscriber('/oak/rgb/image_raw', Image, self.img_front_callback, queue_size=1)
         # three view processing
         elif self.view_mode == "three_views":
-            # if self.model == "e2":
-            #     self.sub_front_image = rospy.Subscriber('/zed2/zed_node/rgb/image_rect_color', Image, self.get_front_img_callback, ueue_size=1)
-            # elif self.model == "e4":
-            #     self.sub_front_image = rospy.Subscriber('/oak/rgb/image_raw', Image, self.get_front_img_callback, queue_size=1)
-            # self.sub_left_image = rospy.Subscriber('/camera_fl/arena_camera_node/image_raw', Image, self.get_left_img_callback, queue_size=1)
-            # self.sub_right_image = rospy.Subscriber('/camera_fr/arena_camera_node/image_raw', Image, self.get_right_img_callback, queue_size=1)
-            # # self.process_three_view()
-            # while not rospy.core.is_shutdown():
-            #     if self.front_view is not None and self.left_view is not None and self.right_view is not None:
-            #         self.threw_view_callback(self.front_view, self.left_view, self.right_view)
-            #     rospy.rostime.wallsleep(0.1)
-
             # use message_filters lib to subscribe and synchronize messages
             front_image = None
             if self.model == "e2":
@@ -128,39 +116,7 @@ class lanenet_detector():
     def get_right_img_callback(self, data):
         self.right_view = img_callback_helper(data)
 
-    # def process_three_view(self):
-    #     # use message_filters lib to subscribe and synchronize messages
-    #     front_image = None
-    #     if self.model == "e2":
-    #         front_image = message_filters.Subscriber('/zed2/zed_node/rgb/image_rect_color', Image)
-    #     elif self.model == "e4":
-    #         front_image = message_filters.Subscriber('/oak/rgb/image_raw', Image)
-    #     left_image = message_filters.Subscriber('/camera_fl/arena_camera_node/image_raw', Image)
-    #     right_image = message_filters.Subscriber('/camera_fr/arena_camera_node/image_raw', Image)
-
-    #     assert front_image is not None, "Front image subscriber is not initialized."
-    #     assert left_image is not None, "Left image subscriber is not initialized."
-    #     assert right_image is not None, "Right image subscriber is not initialized."
-
-    #     ats = message_filters.ApproximateTimeSynchronizer([front_image, left_image, right_image], queue_size=20,
-    #                                                       slop=0.2)
-    #     ats.registerCallback(self.threw_view_callback)
-
-    #     rospy.spin()
-
     def threw_view_callback(self, front_image, left_image, right_image):
-        # if front_image is None:
-        #     print("front none")
-        #     return
-        # if left_image is None:
-        #     print("left none")
-        #     return
-        # if right_image is None:
-        #     print("right none")
-        #     return
-        # if front_image is None or left_image is None or right_image is None:
-        #     return
-            
         front_image = img_callback_helper(front_image)
         left_image = img_callback_helper(left_image)
         right_image = img_callback_helper(right_image)
@@ -216,14 +172,14 @@ class lanenet_detector():
 
         three_view_forward_image = None
         ######## for visualize birdeye transformation only, do not open for high efficiency real-time demand, computational costly
-        three_view_birdeye, M, Minv = get_three_view_birdeye(front_image, left_image, right_image,
-                                                              output_h=output_h, output_w=output_w, scale=scale, model=self.model)
-        front_h, front_w = front_image.shape[:2]
-        out_size = (int(front_h * 1.5), int(front_w * 1.5))
-        three_view_forward_image = get_three_view_forward(three_view_birdeye, front_h, front_w, Minv, out_size=out_size)
-        # print("forward shape", three_view_forward_image.shape)
-        # cv2.imwrite(f'src/lane_follow/src/record/three_view_birdeye_{self.timestamp}.jpg', three_view_birdeye)
-        # cv2.imwrite('src/lane_follow/src/three_view_forward.jpg', three_view_forward_image)
+        # three_view_birdeye, M, Minv = get_three_view_birdeye(front_image, left_image, right_image,
+        #                                                       output_h=output_h, output_w=output_w, scale=scale, model=self.model)
+        # front_h, front_w = front_image.shape[:2]
+        # out_size = (int(front_h * 1.5), int(front_w * 1.5))
+        # three_view_forward_image = get_three_view_forward(three_view_birdeye, front_h, front_w, Minv, out_size=out_size)
+        # # print("forward shape", three_view_forward_image.shape)
+        # # cv2.imwrite(f'src/lane_follow/src/record/three_view_birdeye_{self.timestamp}.jpg', three_view_birdeye)
+        # # cv2.imwrite('src/lane_follow/src/three_view_forward.jpg', three_view_forward_image)
 
         combine_fit_img, bird_fit_img, waypoints = self.detection(img, img_birdeye, M, Minv, mode="front")
 
@@ -239,7 +195,7 @@ class lanenet_detector():
 
         mask_image, bird_image, waypoints = self.front_only_detection(raw_img)
 
-        if mask_image is not None and bird_image is not None:
+        if mask_image is not None and bird_image is not None and len(waypoints) > 0:
             # Convert an OpenCV image into a ROS image message
             out_img_msg = self.bridge.cv2_to_imgmsg(mask_image, 'bgr8')
             out_bird_msg = self.bridge.cv2_to_imgmsg(bird_image, 'bgr8')
@@ -248,7 +204,7 @@ class lanenet_detector():
             self.pub_image.publish(out_img_msg)
             self.pub_bird.publish(out_bird_msg)
             waypoint_topic = Int16MultiArray()
-            waypoint_topic.data = waypoints
+            waypoint_topic.data = waypoints.flatten()
             self.waypoints.publish(waypoint_topic)
 
     def front_only_detection(self, img):

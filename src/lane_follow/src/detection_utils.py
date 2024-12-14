@@ -316,6 +316,13 @@ def get_three_view_birdeye_trans_first(front_image, left_image, right_image, out
 
     edges_image = edges_left + edges_right
     warped_edges = np.where(mask_front == 0, edges_image, edges_front)
+
+    # add mask of interest
+    interest_mask = np.ones_like(warped_edges)
+    h, w = warped_edges.shape
+    interest_mask[:h // 2, :w // 4] = 0
+    interest_mask[:h // 2, (w * 3 // 4):] = 0
+
     # cv2.imwrite("warped_edges.jpg", warped_edges * 255)
 
     return warped_edges, M_front, Minv_front
