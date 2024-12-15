@@ -199,16 +199,17 @@ class Stanley(object):
     def waypoint_callback(self, data):
        
         new_wp = waypoints_callback_helper(data) #/ 10000
+        print(new_wp)
 
         if len(new_wp) > 1:
             wp = new_wp
         else:
             wp = wp
 
-        x2 = int((wp[3][0]+wp[2][0])/2)
-        y2 = int((wp[3][1]+wp[2][1])/2)
-        x1 = int((wp[0][0]+wp[1][0])/2)
-        y1 = int((wp[0][1]+wp[1][1])/2)
+        x2 = int((wp[4][0]+wp[3][0])/2)
+        y2 = int((wp[4][1]+wp[3][1])/2)
+        x1 = int((wp[1][0]+wp[2][0])/2)
+        y1 = int((wp[1][1]+wp[2][1])/2)
         heading = np.arctan2(y2-y1, x2-x1)
         self.waypoint_x1 = x1
         self.waypoint_y1 = y1
@@ -338,19 +339,14 @@ class Stanley(object):
             filt_vel = np.squeeze(self.speed_filter.get_data(self.speed))
             # filt_vel = self.speed
             # print(filt_vel)
-            if msg.data == "stop" & self.desired_speed > 0:
-                print("Stop sign detected, stopping vehicle")
-                self.desired_speed = 0
-            elif msg.data == "stop" & self.desired_speed == 0:
-                print("Stopping vehicle")
-                self
-            else:
-                print("Normal opperation")
+            
+            ## object detection
+            # if self.sign == "stop" & self.desired_speed > 0:
+            #     self.state = False
+            # elif self.sign == "stop" & filt_vel == 0:
+            #     self.state = True
 
-            if self.sign == "stop" & self.desired_speed > 0:
-                self.state = False
-            elif self.sign == "stop" & filt_vel == 0:
-                self.state = True
+            self.state = True
 
             if self.state == True:
                 if abs(steering_angle) < 3:
@@ -393,7 +389,7 @@ class Stanley(object):
 
             # -------------------------------------- Stanley controller --------------------------------------
 
-            a_delta = np.arctan2(ct_error*0.001, filt_vel)
+            a_delta = np.arctan2(ct_error*0.0004, filt_vel)
             a_delta_deg = round(np.degrees(a_delta), 1)
             f_delta        = round(theta_e + a_delta, 3)
             # f_delta        = round(theta_e + np.arctan2(ct_error*0.4, filt_vel), 3)
@@ -501,5 +497,5 @@ class Stanley(object):
 
     def stop(self):
         newAckermannCmd = AckermannDrive()
-        newAckermannCmd.speed = 0
-        self.stanley_pub.publish(newAckermannCmd)
+        # newAckermannCmd.speed = 0
+        # self.accel_pub.publish(newAckermannCmd)

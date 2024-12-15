@@ -109,10 +109,11 @@ class Stanley(object):
         self.speed      = 0.0
         # self.stanley_pub = rospy.Publisher('/gem/stanley_gnss_cmd', AckermannDrive, queue_size=1)
         
-        #stop sign
-        self.sign_sub = rospy.Subscriber("sign", Bool, self.sign_callback, queue_size=1)
-        self.sign_value = False
 
+        #stop sign
+        self.sign_sub = rospy.Subscriber("/stop", String, self.sign_callback, queue_size=1)
+        self.sign = False
+        self.state = True
 
         # SIM
         # self.speed      = 0.0
@@ -180,7 +181,9 @@ class Stanley(object):
         self.steer_pub = rospy.Publisher('/pacmod/as_rx/steer_cmd', PositionWithSpeed, queue_size=1)
         self.steer_cmd = PositionWithSpeed()
         self.steer_cmd.angular_position = 0.0 # radians, -: clockwise, +: counter-clockwise
-        self.steer_cmd.angular_velocity_limit = 4.0 # radians/second
+        self.steer_cmd.angular_velocity_limit = 4.0 # radians/second\
+
+        
 
     # Get vehicle speed
     def speed_callback(self, msg):
@@ -194,7 +197,7 @@ class Stanley(object):
         self.steer = round(np.degrees(msg.output),1)
 
     def sign_callback(self, msg):
-        self.sign_value = msg.data
+        self.sign = msg.data
 
     def waypoint_callback(self, data):
        
@@ -252,6 +255,7 @@ class Stanley(object):
     def start_stanley(self):
         f_delta_prev = 0
         steering_angle = 0
+        
         while not rospy.is_shutdown():
 
             # if (self.gem_enable == False):
@@ -299,6 +303,34 @@ class Stanley(object):
             # self.desired_speed = 0.6
             self.desired_speed = 0 #turning
             self.brake = 0
+
+            if self.sign == "stop":
+                self.state = False
+            # elif self.sign == "stop" & filt_vel == 0:
+            #     self.state = True
+
+            if self.state == True:
+                if abs(steering_angle) < 3:
+                    # In a straight line, accelerate smoothly
+                    self.desired_speed = 0.6
+                    self.brake = 0
+                else:
+                    # In a turn, reduce speed
+                    self.desired_speed = 0.4
+                    
+                    # If speed is too high for the turn, apply brake
+                    if filt_vel > self.desired_speed * 5:
+                        self.brake = 0.5
+                    else:
+                        self.brake = 0
+            else:
+                self.desired_speed = 0
+                self.brake = 0.6
+
+            print("desired_speed: " + str(self.desired_speed))
+            
+            a_expected = self.pid_speed.get_control(rospy.get_time(), self.desired_speed - filt_vel)
+            print(a_expected)
             
             a_expected = self.pid_speed.get_control(rospy.get_time(), self.desired_speed - filt_vel)
             # print(a_expected)
@@ -314,16 +346,16 @@ class Stanley(object):
             if throttle_percent > self.max_accel:
                 throttle_percent = self.max_accel
 
-            # if throttle_percent < 0.3:
-            #     if self.brake == 0:
-            #         throttle_percent = 0.37
-            #     else:
-            #         throttle_percent = 0
+            if throttle_percent < 0.3:
+                if self.brake == 0:
+                    throttle_percent = 0.2
+                else:
+                    throttle_percent = 0
 
             # -------------------------------------- Stanley controller --------------------------------------
             
-            if self.speed > 0.5:
-                steering_angle = 12
+            # if self.speed > 0.5:
+            #     steering_angle = 12
             
 
 
@@ -378,5 +410,5 @@ class Stanley(object):
 
     def stop(self):
         newAckermannCmd = AckermannDrive()
-        newAckermannCmd.speed = 0
-        self.stanley_pub.publish(newAckermannCmd)
+        # newAckermannCmd.speed = 0
+        # self.stanley_pub.publish(newAckermannCmd)

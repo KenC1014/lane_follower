@@ -66,10 +66,8 @@ def callback(depth_msg, rgb_msg):
                 center_y = max(0, min(center_y, depth_image.shape[0] - 1))
 
                 # Get the depth value at the center pixel
-                if GEM_MODEL == "e4":
-                    center_depth = depth_image[center_y, center_x] / 1000
-                elif GEM_MODEL == "e2":
-                    center_depth = depth_image[center_y, center_x]
+                center_depth = depth_image[center_y, center_x] / 1000
+
                 # Check for valid depth values
                 if not np.isfinite(center_depth) or center_depth <= 0:
                     rospy.logwarn(f"Invalid depth for {class_name} at center ({center_x}, {center_y}): {center_depth}")
@@ -79,7 +77,7 @@ def callback(depth_msg, rgb_msg):
                 rospy.loginfo(f"Depth at center of {class_name}: {center_depth} meters (center: ({center_x}, {center_y}))")
 
                 # Check if the depth is within the stop range (5m to 10m)
-                if center_depth <= 10.0:
+                if center_depth <= 6.0:
                     rospy.loginfo(f"Object {class_name} within stop range: {center_depth} meters")
                     stop_flag = True
 
@@ -105,12 +103,12 @@ def callback(depth_msg, rgb_msg):
     except Exception as e:
         rospy.logerr(f"Error processing messages: {e}")
 
-GEM_MODEL = "e4" # "e2" or "e4"
+gem_model = "e4" # "e2" or "e4"
 # Subscriptions to depth and RGB topics
-if GEM_MODEL == "e2":
+if gem_model == "e2":
     depth_sub = message_filters.Subscriber('/zed2/zed_node/depth/depth_registered', Image)
     rgb_sub = message_filters.Subscriber('/zed2/zed_node/rgb/image_rect_color', Image)
-elif GEM_MODEL == "e4":
+elif gem_model == "e4":
     depth_sub = message_filters.Subscriber('/oak/stereo/image_raw', Image)
     rgb_sub = message_filters.Subscriber('/oak/rgb/image_raw', Image)
     # sub_point_cloud = message_filters.Subscriber('/oak/depth/points', PointCloud2)

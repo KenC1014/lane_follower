@@ -67,10 +67,9 @@ class lanenet_detector():
         self.prev_wps = []
         self.centerx_current = None
         self.turn = "front"
+        self.turn_for_vision = "front"
 
         # for save image identification
-        self.timestamp = time.time()
-
 
         # Subscribers
         # front view callback processing
@@ -167,21 +166,47 @@ class lanenet_detector():
         img_birdeye, M, Minv = get_three_view_birdeye_trans_first(img, left_image, right_image,
                                                                  output_h=output_h, output_w=output_w, 
                                                                  scale=scale, model=self.model)
-        # print("birdeye shape", img_birdeye.shape)
-        # cv2.imwrite(f'src/lane_follow/src/record/three_view_bird_binary_{self.timestamp}.jpg', img_birdeye * 255)
+        # filter the area of interest
+        h, w = img_birdeye.shape
+        if self.turn_for_vision == "left":
+            img_birdeye[:h // 3, :] = 0
+            img_birdeye[:, (w * 2 // 3):] = 0
+        elif self.turn_for_vision == "right":
+            img_birdeye[:h // 3, :] = 0
+            img_birdeye[:, :(w // 3)] = 0
+        else:
+            img_birdeye[:h // 2, :w // 4] = 0
+            img_birdeye[:h // 2, (w * 3 // 4):] = 0
 
-        three_view_forward_image = None
-        ######## for visualize birdeye transformation only, do not open for high efficiency real-time demand, computational costly
-        # three_view_birdeye, M, Minv = get_three_view_birdeye(front_image, left_image, right_image,
-        #                                                       output_h=output_h, output_w=output_w, scale=scale, model=self.model)
-        # front_h, front_w = front_image.shape[:2]
-        # out_size = (int(front_h * 1.5), int(front_w * 1.5))
-        # three_view_forward_image = get_three_view_forward(three_view_birdeye, front_h, front_w, Minv, out_size=out_size)
-        # # print("forward shape", three_view_forward_image.shape)
-        # # cv2.imwrite(f'src/lane_follow/src/record/three_view_birdeye_{self.timestamp}.jpg', three_view_birdeye)
-        # # cv2.imwrite('src/lane_follow/src/three_view_forward.jpg', three_view_forward_image)
+        # print("birdeye shape", img_birdeye.shape)
 
         combine_fit_img, bird_fit_img, waypoints = self.detection(img, img_birdeye, M, Minv, mode="front")
+
+        three_view_forward_image = None
+        record = False
+        timestamp = time.time()
+        if len(waypoints) > 0:
+            if waypoints[-1][0] < w // 4 and waypoints[-2][0] < w // 4:
+                self.turn_for_vision = "left"
+            elif waypoints[-1][0] > w * 3 // 4 and waypoints[-2][0] > w * 3 // 4:
+                self.turn_for_vision = "right"
+            else:
+                self.turn_for_vision = "front"
+            if record:
+                ######## for visualize birdeye transformation only, do not open for high efficiency real-time demand, computational costly
+                three_view_birdeye, M, Minv = get_three_view_birdeye(front_image, left_image, right_image,
+                                                                     output_h=output_h, output_w=output_w, scale=scale,
+                                                                     model=self.model)
+
+                # front_h, front_w = front_image.shape[:2]
+                # out_size = (int(front_h * 1.5), int(front_w * 1.5))
+                # three_view_forward_image = get_three_view_forward(three_view_birdeye, front_h, front_w, Minv, out_size=out_size)
+                
+                # cv2.imwrite(f'record/edges/three_view_edges_{timestamp}.jpg', img_birdeye * 255)
+                cv2.imwrite(f'record/birdeye/three_view_birdeye_{timestamp}.jpg', three_view_birdeye)
+                cv2.imwrite(f'record/waypoints/three_view_waypoints_{timestamp}.jpg', combine_fit_img)
+                cv2.imwrite(f'record/birdfit/three_view_edges_{timestamp}.jpg', bird_fit_img)
+                # cv2.imwrite(f'record/forward/three_view_forward_{timestamp}.jpg', three_view_forward_image)
 
         return combine_fit_img, bird_fit_img, waypoints, three_view_forward_image
 

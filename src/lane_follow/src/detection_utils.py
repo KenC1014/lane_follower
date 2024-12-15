@@ -36,23 +36,23 @@ def combinedBinaryImage(img):
     color_mask = color_thresh(img)
 
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY).astype(np.uint8)
-    # img = cv2.medianBlur(img, 5)
+    img = cv2.medianBlur(img, 5)
 
-    img = cv2.GaussianBlur(img, (5, 5), 0)
-    # img = cv2.bilateralFilter(img, 9, 75, 75)
+    # img = cv2.GaussianBlur(img, (5, 5), 0)
+    img = cv2.bilateralFilter(img, 9, 75, 75)
 
     binaryImage = cv2.Canny(img, 50, 150)
     # binaryImage[color_mask == 0] = 0
 
     # filter out small edges
-    # contours, _ = cv2.findContours(binaryImage, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    # filtered_edges = np.zeros_like(binaryImage)
-    # for contour in contours:
-    #     # Calculate the area of the contour
-    #     area = cv2.contourArea(contour)
-    #     # Retain only contours larger than the specified minimum size
-    #     if area >= 100:
-    #         cv2.drawContours(filtered_edges, [contour], -1, 255, thickness=cv2.FILLED)
+    contours, _ = cv2.findContours(binaryImage, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    filtered_edges = np.zeros_like(binaryImage)
+    for contour in contours:
+        # Calculate the area of the contour
+        area = cv2.contourArea(contour)
+        # Retain only contours larger than the specified minimum size
+        if area >= 500:
+            cv2.drawContours(filtered_edges, [contour], -1, 255, thickness=cv2.FILLED)
 
     # Remove noise from binary image
     binaryImage = morphology.remove_small_objects(binaryImage.astype('bool'),min_size=100,connectivity=2)
@@ -155,7 +155,7 @@ def get_perspective_points(img, out_h, out_w, scale, mode="e4front"):
         y_b_trans = y_b * 8.4
         trans_to_zero = np.array([1 - img_w, 1 - img_h])
         theta = -47 * np.pi / 180
-        translation = np.array([(out_w - img_w) // 2 -3229, vertical_shift -1501])
+        translation = np.array([(out_w - img_w) // 2 -3229, vertical_shift -1501 - 40])
         adjust_size = 1
 
     # right camera view
@@ -316,11 +316,6 @@ def get_three_view_birdeye_trans_first(front_image, left_image, right_image, out
 
     edges_image = edges_left + edges_right
     warped_edges = np.where(mask_front == 0, edges_image, edges_front)
-
-    # filter the area of interest
-    h, w = warped_edges.shape
-    warped_edges[:h // 2, :w // 4] = 0
-    warped_edges[:h // 2, (w * 3 // 4):] = 0
 
     # cv2.imwrite("warped_edges.jpg", warped_edges * 255)
 
